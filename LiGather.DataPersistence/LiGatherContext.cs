@@ -12,6 +12,7 @@ namespace LiGather.DataPersistence
         }
 
         public DbSet<ProxyEntity> ProxyEntities { set; get; }
+        public DbSet<CrawlerEntity> CrawlerEntities { set; get; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

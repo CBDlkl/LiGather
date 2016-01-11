@@ -60,13 +60,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LiGather.DataPersistence\LiGather.DataPersistence.csproj">
-      <Project>{29271f27-c1f9-4a89-88da-79c392520f64}</Project>
-      <Name>LiGather.DataPersistence</Name>
+    <ProjectReference Include="..\LiGather.Crawler\LiGather.Crawler.csproj">
+      <Project>{a581ffd0-a70e-42f3-a2f7-7879d4d0f233}</Project>
+      <Name>LiGather.Crawler</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LiGather.Model\LiGather.Model.csproj">
-      <Project>{d2804cdf-74e3-4abd-aee5-be80461bc1d3}</Project>
-      <Name>LiGather.Model</Name>
+    <ProjectReference Include="..\LiGather.Proxy\LiGather.Proxy.csproj">
+      <Project>{01934AB1-9304-40ED-A9CC-99626C0F6619}</Project>
+      <Name>LiGather.Proxy</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
