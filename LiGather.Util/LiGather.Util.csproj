@@ -50,6 +50,7 @@
     <Compile Include="Calculate.cs" />
     <Compile Include="Conv.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="URL\URL.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
