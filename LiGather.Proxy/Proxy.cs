@@ -62,14 +62,14 @@ namespace LiGather.Proxy
             var client = new HttpClient();
             while (true)
             {
-                var content = client.Create<string>(HttpMethod.Get, "http://vxer.daili666.com/ip/", data: new
+                var content = client.Create<string>(HttpMethod.Get, "http://xvre.daili666api.com/ip/", data: new
                 {
                     tid = 557541152620047,
                     num = nums,
                     delay = 5,
-                    category = 2,
-                    sortby = "time",
-                    foreign = "none",
+                    //category = 2,
+                    //sortby = "time",
+                    //foreign = "none",
                     filter = "on"
                 }).Send();
                 if (content.IsValid())
@@ -81,12 +81,12 @@ namespace LiGather.Proxy
         }
 
         /// <summary>
-        /// 更新代理到数据库
+        /// 直接采集IP并更新到数据库
         /// </summary>
         /// <param name="countNum">采集IP总数</param>
         /// <param name="getNum">每次提取数量</param>
         /// <param name="isValidate">是否对代理验证</param>
-        public void ProxySave(int countNum = 1000, int getNum = 5, bool isValidate = false)
+        public void ProxySave(int countNum = 100, int getNum = 5, bool isValidate = false)
         {
             new Thread(() =>
             {
@@ -94,12 +94,13 @@ namespace LiGather.Proxy
                 {
                     if (countNum == 0)
                         break;
-                    var ipLists = GetProxyByHttp(getNum).Split(Environment.NewLine.ToCharArray());
+                    var ipLists = GetProxyByHttp(getNum).Split(Environment.NewLine.ToCharArray()).ExceptNull().ToList();
                     foreach (var ipList in ipLists)
                     {
-                        if (string.IsNullOrWhiteSpace(ipList))
-                            continue;
                         var ipAndPort = ipList.Split(':');
+                        if (string.IsNullOrWhiteSpace(ipList) || ipAndPort.Length<2)
+                            continue;
+                        Console.WriteLine("获取到代理："+ ipList);
                         var model = new ProxyEntity();
                         model.IpAddress = ipAndPort[0];
                         model.Port = Conv.ToInt(ipAndPort[1]);
@@ -125,6 +126,27 @@ namespace LiGather.Proxy
         }
 
         /// <summary>
+        /// 通过在线代理直接获取未验证的IP代理
+        /// 主要用于本地IP代理库存不足，临时获取
+        /// </summary>
+        /// <returns></returns>
+        public ProxyEntity GetHttProxyEntity()
+        {
+            var ipList = GetProxyByHttp();
+            var ipAndPort = ipList.Split(':');
+            var model = new ProxyEntity();
+            model.IpAddress = ipAndPort[0];
+            model.Port = Conv.ToInt(ipAndPort[1]);
+            model.Usage = 1;
+            model.CanUse = true;
+            model.CreateTime = DateTime.Now;
+            model.LastUseTime = DateTime.Now;
+            if (!ProxyDomain.IsExist(model))
+                ProxyDomain.Add(model);
+            return model;
+        }
+
+        /// <summary>
         /// 验证Ip可用性
         /// </summary>
         /// <param name="maxThreadNum">启用多少线程验证</param>
@@ -136,7 +158,7 @@ namespace LiGather.Proxy
             {
                 tasks[i] = new Task(() =>
                 {
-                    for (var j = 0; j < 20; j++)
+                    for (var j = 0; j < MaxValue; j++)
                     {
                         var id = new Random().Next(1, ProxyDomain.GetMaxId());
                         var proxyEntity = ProxyDomain.GetById(id);

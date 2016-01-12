@@ -9,8 +9,10 @@ using FSLib.Network.Http;
 using Ivony.Html;
 using Ivony.Html.ExpandedAPI;
 using Ivony.Html.Parser;
+using LiGather.DataPersistence.Domain;
 using LiGather.DataPersistence.Proxy;
 using LiGather.Model.Domain;
+using LiGather.Util;
 
 namespace LiGather.Crawler.Bjqyxy
 {
@@ -56,23 +58,36 @@ namespace LiGather.Crawler.Bjqyxy
         const string zhuUrl = "http://211.94.187.236/xycx/queryCreditAction!qyxq_view.dhtml";
         #endregion
 
+        readonly HttpClient _client;
+
+        public BjCrawler()
+        {
+            _client = new HttpClient();
+            _client.Setting.Timeout = 1000 * 5;
+            _client.Create<string>(HttpMethod.Post, firsturl).Send();
+        }
+
         /// <summary>
         /// 爬虫逻辑
         /// </summary>
         /// <param name="companyName">企业名称</param>
         /// <returns></returns>
-        public string CrawlerWork(string companyName)
+        public void CrawlerWork(string companyName)
         {
-            try
+            while (true)
             {
-                ProxyEntity proxyEntity = ProxyDomain.GetByRandom(); //代理IP
-                var client = new HttpClient();
-                client.Create<string>(HttpMethod.Post, firsturl).Send();
-                while (true)
+                try
                 {
+                    var proxyEntity = ProxyDomain.GetByRandom(); //代理IP
+                    if (proxyEntity == null)
+                    {
+                        Console.WriteLine("没有可用代理，在线代理临时获取策略启动");
+                        proxyEntity = Proxy.Proxy.GetInstance().GetHttProxyEntity();
+                        Console.WriteLine("线上获取到了代理：{0}:{1}", proxyEntity.IpAddress, proxyEntity.Port);
+                    }
                     Thread.Sleep(250);
-                    //client.Setting.Proxy = new WebProxy(proxyEntity.IpAddress, proxyEntity.Port);
-                    var resultBody = client.Create<string>(HttpMethod.Post, targetUrl, data: new
+                    _client.Setting.Proxy = new WebProxy(proxyEntity.IpAddress, proxyEntity.Port);
+                    var resultBody = _client.Create<string>(HttpMethod.Post, targetUrl, data: new
                     {
                         queryStr = companyName,
                         module = "",
@@ -80,7 +95,13 @@ namespace LiGather.Crawler.Bjqyxy
                     }).Send();
                     var nextUrl = "";
                     if (!resultBody.IsValid())
-                        continue;
+                    {
+                        RemoveIp(proxyEntity); continue;
+                    }
+                    if (ValidText(resultBody.Result))
+                    {
+                        RemoveIp(proxyEntity); continue;
+                    }
                     //提取二级连接
                     var parser = new JumonyParser();
                     var document = parser.Parse(resultBody.Result).Find("li a");
@@ -91,185 +112,78 @@ namespace LiGather.Crawler.Bjqyxy
                     }
                     //提取目标正文
                     var resultsecondBody =
-                        client.Create<string>(HttpMethod.Get, zhuUrl + new Uri(firsturl + nextUrl).Query).Send();
+                        _client.Create<string>(HttpMethod.Get, zhuUrl + new Uri(firsturl + nextUrl).Query).Send();
                     if (!resultsecondBody.IsValid())
                     {
-                        continue;
+                        RemoveIp(proxyEntity); continue;
                     }
-                    var sorceIhtml = new JumonyParser().Parse(resultsecondBody.Result);
-                    var tableCount = sorceIhtml.Find("table");
+                    if (ValidText(resultBody.Result))
+                    {
+                        RemoveIp(proxyEntity); continue;
+                    }
+                    var sorceIhtml = new JumonyParser().Parse(resultsecondBody.Result.Replace("<th", "<td"));
+                    var tableLists = sorceIhtml.Find("table").ToList();
+                    var listall = new List<string>();
+                    tableLists.ElementAt(5).Find("tr td").ForEach(t => listall.Add(t.InnerText().TrimEnd(':').Trim()));
+                    tableLists.ElementAt(7).Find("tr td").ForEach(t => listall.Add(t.InnerText().TrimEnd(':').Trim()));
+                    tableLists.ElementAt(9).Find("tr td").ForEach(t => listall.Add(t.InnerText().TrimEnd(':').Trim()));
+                    var model = FillModel(listall, companyName);
 
-
-                    //int i = 0;
-                    //foreach (var htmlElement in tableCount)
-                    //{
-                    //    Console.WriteLine("**********第{0}号表**********", i++);
-                    //    var trs = htmlElement.Find("tr");
-                    //    foreach (var element in trs)
-                    //    {
-                    //        var tds = element.Find("td");
-                    //        foreach (var td in tds)
-                    //        {
-                    //            Console.WriteLine(td.InnerText());
-                    //        }
-                    //    }
-                    //}
-                    return "";
+                    proxyEntity.Usage = proxyEntity.Usage + 1;
+                    ProxyDomain.Update(proxyEntity);
+                    CrawlerDomain.Add(model);
+                    break;
                 }
-            }
-            catch (Exception e)
-            {
-                throw;
+                catch (Exception e)
+                {
+                    throw;
+                }
             }
         }
 
+        /// <summary>
+        /// 移除失效代理
+        /// </summary>
+        private void RemoveIp(ProxyEntity model)
+        {
+            model.CanUse = false;
+            model.LastUseTime = DateTime.Now;
+            Console.WriteLine("移除失效代理:{0}:{1}", model.IpAddress, model.Port);
+            ProxyDomain.Update(model);
+        }
 
-        ///// <summary>
-        ///// 解析HTML文本信息
-        ///// </summary>
-        ///// <param name="SourceHtml"></param>
-        ///// <returns></returns>
-        //private CrawlerEntity HtmlAnalytical(string SourceHtml)
-        //{
-        //    CrawlerEntity model = new CrawlerEntity(); //模型容器
-        //    //model.HtmlScore = SourceHtml; //存储源码
-        //    var sorceIhtml = new JumonyParser().Parse(SourceHtml);
-        //    var tdHtmlBases = sorceIhtml.Find(".f-lan tr");
-        //    var list = new List<string>();
-        //    var elements = tdHtmlBases as IHtmlElement[] ?? tdHtmlBases.ToArray();
-        //    for (int i = 0; i < elements.Count(); i++)
-        //    {
-        //        Console.WriteLine(elements[i].Find("td").FirstOrDefault().InnerText());
-        //        var text = elements[i].Find("td").FirstOrDefault().InnerText();
-        //        switch (text.Trim())
-        //        {
-        //            case "工商登记注册基本信息":
-        //                Modular01(sorceIhtml, model, i);
-        //                break;
-        //            case "资本相关信息":
-        //                Modular02(sorceIhtml, model, i);
-        //                break;
-        //            case "组织机构代码信息":
-        //                Modular03(sorceIhtml, model, i);
-        //                break;
-        //            case "税务登记信息":
-        //                Modular04(sorceIhtml, model, i);
-        //                break;
-        //            default:
-        //                break;
-        //        }
-        //    }
-        //    return model;
-        //}
+        private bool ValidText(string html)
+        {
+            return html.Contains("访问");
+        }
 
-        //#region HTML解析帮助
-        //public static CrawlerEntity Modular01(IHtmlDocument sorceIhtml, CrawlerEntity model, int i)
-        //{
-        //    //基础信息
-        //    var tdHtml_base = sorceIhtml.Find(".f-lbiao").ElementAt(i).Find("tr td").ToList();
-        //    //foreach (var td in tdHtml_base)
-        //    //{
-        //    //    Console.WriteLine(td.InnerText());
-        //    //}
-        //    model.basicsInfo = FillModel<BasicsInfo>(tdHtml_base);
-        //    return model;
-        //}
+        /// <summary>
+        /// 填充
+        /// </summary>
+        /// <param name="scoreList"></param>
+        /// <param name="searchName"></param>
+        /// <returns></returns>
+        private static CrawlerEntity FillModel(List<string> scoreList, string searchName)
+        {
+            var model = new CrawlerEntity();
+            var info = model.GetType().GetProperties();
+            foreach (var item in info)
+            {
+                var name = item.Name;
+                var index = scoreList.FindIndex(c => c.Contains(name));
+                if (index < 0)
+                    continue;
+                if (item.PropertyType == typeof(DateTime?))
+                    item.SetValue(model, Conv.ToDateOrNull(scoreList[index + 1]), null);
+                else
+                    item.SetValue(model, scoreList[index + 1], null);
+            }
+            model.搜索名称 = searchName;
+            model.更新时间 = DateTime.Now;
+            model.入库时间 = DateTime.Now;
+            model.是否为历史名称 = model.搜索名称.Contains(model.名称 ?? "");
 
-        //public static TargetModel Modular02(IHtmlDocument sorceIhtml, TargetModel model, int i)
-        //{
-        //    //资本相关信息
-        //    var tdHtml_zb = sorceIhtml.Find(".f-lbiao").ElementAt(i).Find("tr td").ToList();
-        //    //foreach (var td in tdHtml_zb)
-        //    //{
-        //    //    Console.WriteLine(td.InnerText());
-        //    //}
-        //    model.capitalInfo = FillModel<CapitalInfo>(tdHtml_zb);
-        //    return model;
-        //}
-
-        //public static TargetModel Modular03(IHtmlDocument sorceIhtml, TargetModel model, int i)
-        //{
-        //    //组织机构代码信息
-        //    var tdHtml_orgCode = sorceIhtml.Find(".f-lbiao").ElementAt(i).Find("tr td").ToList();
-        //    //foreach (var td in tdHtml_orgCode)
-        //    //{
-        //    //    Console.WriteLine(td.InnerText());
-        //    //}
-        //    model.orgCodeInfo = FillModel<OrgCodeInfo>(tdHtml_orgCode);
-        //    return model;
-        //}
-
-        //public static TargetModel Modular04(IHtmlDocument sorceIhtml, TargetModel model, int x)
-        //{
-        //    //税务登记信息
-        //    var trHtml_tax = sorceIhtml.Find(".f-lbiao").ElementAt(x).Find("tr").ToList();
-        //    foreach (var tr in trHtml_tax)
-        //    {
-        //        var sorceth = tr.Find("th");
-        //        var sorcetd = tr.Find("td");
-        //        //for (var i = 0; i < sorceth.Count(); i++)
-        //        //{
-        //        //    Console.WriteLine(sorceth.ElementAt(i).InnerText());
-        //        //    Console.WriteLine(sorcetd.ElementAt(i).InnerText());
-        //        //}
-        //    }
-        //    model.taxInfo = FillModel<TaxInfo>(trHtml_tax.Find("th").ToList(), trHtml_tax.Find("td").ToList());
-        //    return model;
-        //}
-
-        ///// <summary>
-        ///// List 映射到 模型，针对td
-        ///// </summary>
-        ///// <typeparam name="T"></typeparam>
-        ///// <param name="scoreList"></param>
-        ///// <returns></returns>
-        //private static T FillModel<T>(List<IHtmlElement> scoreList) where T : new()
-        //{
-        //    T t = new T();
-        //    PropertyInfo[] info = t.GetType().GetProperties();
-        //    foreach (var item in info)
-        //    {
-        //        string name = item.Name.Split('_')[1];
-        //        for (int i = 0; i < scoreList.Count; i++)
-        //        {
-        //            if (i % 2 == 0)
-        //            {
-        //                var trName = scoreList[i].InnerText().Replace("：", "");
-        //                var isContent = trName.Equals(name);
-        //                if (isContent) item.SetValue(t, scoreList[i + 1].InnerText(), null);
-        //            }
-        //        }
-        //    }
-        //    return t;
-        //}
-
-        ///// <summary>
-        ///// List 映射到 模型，针对th和td
-        ///// </summary>
-        ///// <typeparam name="T"></typeparam>
-        ///// <param name="scoreTh"></param>
-        ///// <param name="scoreTd"></param>
-        ///// <returns></returns>
-        //private static T FillModel<T>(List<IHtmlElement> scoreTh, List<IHtmlElement> scoreTd) where T : new()
-        //{
-        //    T t = new T();
-        //    PropertyInfo[] info = t.GetType().GetProperties();
-        //    foreach (var item in info)
-        //    {
-        //        string name = item.Name.Split('_')[1];
-        //        for (int i = 0; i < scoreTh.Count; i++)
-        //        {
-        //            var trName = scoreTh[i].InnerText().Replace("：", "");
-        //            var isContent = trName.Equals(name);
-        //            if (isContent)
-        //            {
-        //                item.SetValue(t, scoreTd[i].InnerText(), null); break;
-        //            }
-        //        }
-        //    }
-        //    return t;
-        //}
-
-        //#endregion
+            return model;
+        }
     }
 }

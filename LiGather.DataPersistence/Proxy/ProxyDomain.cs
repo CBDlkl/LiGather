@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity.Migrations;
+﻿using System.Data.Entity.Migrations;
 using System.Linq;
 using LiGather.Model.Domain;
 
@@ -34,7 +32,7 @@ namespace LiGather.DataPersistence.Proxy
                 //随机取
                 //var idLists = Db.ProxyEntities.Where(t => t.CanUse == true).Select(t => t.Id).ToList();
                 //var id = new Random().Next(0, idLists.Count);
-                return Db.ProxyEntities.OrderBy(t => t.LastUseTime).FirstOrDefault();
+                return Db.ProxyEntities.Where(t => t.CanUse.Value).OrderByDescending(t => t.LastUseTime).FirstOrDefault();
             }
         }
 

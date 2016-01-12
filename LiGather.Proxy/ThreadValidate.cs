@@ -33,7 +33,7 @@ namespace LiGather.Proxy
             var content = client.Create<string>(HttpMethod.Get, "https://www.baidu.com").Send();
             if (content.IsValid())
             {
-                Console.WriteLine(content.Result);
+                //Console.WriteLine(content.Result);
             }
             return content.IsValid();
         }
@@ -41,9 +41,10 @@ namespace LiGather.Proxy
         public static bool Doit(object o)
         {
             var model = (ProxyEntity)o;
-            Console.WriteLine("线程{0}开始验证{1}", Thread.CurrentThread.ManagedThreadId, model.IpAddress);
+            Console.WriteLine("线程{0}开始验证{1}:{2}", Thread.CurrentThread.ManagedThreadId, model.IpAddress, model.Port);
             if (!VerificationIp(model.IpAddress, model.Port)) return false;
             model.CanUse = true;
+            model.LastUseTime = DateTime.Now;
             ProxyDomain.Update(model);
             Console.WriteLine("当前线程{0}更新了第{1}号，{2}可用情况",
                 Thread.CurrentThread.ManagedThreadId
