@@ -124,9 +124,8 @@ namespace LiGather.Crawler.Bjqyxy
                     var sorceIhtml = new JumonyParser().Parse(resultsecondBody.Result.Replace("<th", "<td"));
                     var tableLists = sorceIhtml.Find("table").ToList();
                     var listall = new List<string>();
-                    tableLists.ElementAt(5).Find("tr td").ForEach(t => listall.Add(t.InnerText().TrimEnd(':').Trim()));
-                    tableLists.ElementAt(7).Find("tr td").ForEach(t => listall.Add(t.InnerText().TrimEnd(':').Trim()));
-                    tableLists.ElementAt(9).Find("tr td").ForEach(t => listall.Add(t.InnerText().TrimEnd(':').Trim()));
+                    foreach (var htmlElement in tableLists)
+                        htmlElement.Find("tr td").ForEach(t => listall.Add(t.InnerText().TrimEnd(':').TrimEnd('：').Trim()));
                     var model = FillModel(listall, companyName);
 
                     proxyEntity.Usage = proxyEntity.Usage + 1;
