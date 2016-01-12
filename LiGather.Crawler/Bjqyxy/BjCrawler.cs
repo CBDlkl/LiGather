@@ -137,7 +137,7 @@ namespace LiGather.Crawler.Bjqyxy
                     //提取目标正文
                     var resultsecondBody =
                         _client.Create<string>(HttpMethod.Get, zhuUrl + new Uri(firsturl + nextUrl).Query).Send();
-                    NameValueCollection nameValueCollection = new NameValueCollection(URL.GetQueryString(new Uri(firsturl + nextUrl).Query));
+                    var nameValueCollection = new NameValueCollection(URL.GetQueryString(new Uri(firsturl + nextUrl).Query));
                     if (!resultsecondBody.IsValid())
                     {
                         RemoveIp(proxyEntity); continue;
@@ -178,8 +178,7 @@ namespace LiGather.Crawler.Bjqyxy
         {
             model.CanUse = false;
             model.LastUseTime = DateTime.Now;
-            Console.WriteLine("移除失效代理:{0}:{1}", model.IpAddress, model.Port);
-            ProxyDomain.Update(model);
+            ProxyDomain.LockUpdate(model);
         }
 
         private bool ValidText(string html)
