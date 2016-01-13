@@ -84,11 +84,11 @@ namespace LiGather.Crawler.Bjqyxy
             for (var i = 0; i < taskNum; i++)
             {
                 var task = new Task(BaseWork);
-                task.Start();
                 tasks[i] = task;
+                task.Start();
             }
             Task.WaitAll(tasks);
-            //Console.WriteLine("所有任务已经完成 {0}", DateTime.Now);
+            Console.WriteLine("所有任务已经完成 {0}", DateTime.Now);
         }
 
         private void BaseWork()

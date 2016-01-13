@@ -10,17 +10,18 @@ namespace LiGather.DataPersistence.Proxy
     /// </summary>
     public class ProxyDomain
     {
+        private static readonly object obj = new object();
         private static readonly LiGatherContext Db = new LiGatherContext();
 
         public static bool IsExist(ProxyEntity model)
         {
-            lock (Db)
+            lock (obj)
                 return Db.ProxyEntities.Any(t => t.IpAddress == model.IpAddress);
         }
 
         public static ProxyEntity GetById(int id)
         {
-            lock (Db)
+            lock (obj)
             {
                 return Db.ProxyEntities.OrderBy(t => t.LastUseTime).SingleOrDefault(t => t.Id == id);
             }
@@ -28,7 +29,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public static ProxyEntity GetByRandom()
         {
-            lock (Db)
+            lock (obj)
             {
                 //随机取
                 //var idLists = Db.ProxyEntities.Where(t => t.CanUse == true).Select(t => t.Id).ToList();
@@ -39,7 +40,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public static int GetMaxId()
         {
-            lock (Db)
+            lock (obj)
             {
                 return Db.ProxyEntities.Max(t => t.Id);
             }
@@ -47,7 +48,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public static ProxyEntity Get(ProxyEntity model)
         {
-            lock (Db)
+            lock (obj)
             {
                 return Db.ProxyEntities.SingleOrDefault(t => t.Id == model.Id);
             }
@@ -55,7 +56,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public static void Add(ProxyEntity model)
         {
-            lock (Db)
+            lock (obj)
             {
                 Db.ProxyEntities.Add(model);
                 Db.SaveChanges();
@@ -64,7 +65,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public static void Update(ProxyEntity model)
         {
-            lock (Db)
+            lock (obj)
             {
                 Db.ProxyEntities.AddOrUpdate(model);
                 Db.SaveChanges();
@@ -73,7 +74,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public static void LockUpdate(ProxyEntity model)
         {
-            lock (Db)
+            lock (obj)
             {
                 var proxyEntity = Db.ProxyEntities.Where(t => t.Id == model.Id && t.CanUse == true).ToList();
                 if (!proxyEntity.Any()) return;

@@ -28,9 +28,12 @@ namespace LiGather.DataPersistence.Domain
         {
             lock (Db)
             {
-                var model = Db.TrCompanyEntities.First(t => t.IsAbnormal == false && t.IsSearched == false);
-                model.IsSearched = true;
-                Update(model);
+                var model = Db.TrCompanyEntities.FirstOrDefault(t => t.IsAbnormal == false && t.IsSearched == false);
+                if (model != null)
+                {
+                    model.IsSearched = true;
+                    Update(model);
+                }
                 return model;
             }
         }

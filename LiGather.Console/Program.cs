@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,17 +16,22 @@ namespace LiGather.Console
         private static readonly DateTime TimeStamp = DateTime.Now;
         static void Main(string[] args)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             //Proxy.Proxy.GetInstance().ProxySave(100, 10);
             //Proxy.Proxy.GetInstance().ValidateCanUse(7);
 
             //待查数据初始化
             //var lists = File.ReadAllLines("E:/1.txt", Encoding.Default).ToList();
-            //InsertMetadata(lists); 
+            //InsertMetadata(lists);
 
             //抓取数据
             var bjqyxy = new Crawler.Bjqyxy.BjCrawler(TimeStamp);
             bjqyxy.CrawlerWork(4);
 
+            sw.Stop();
+            TimeSpan ts2 = sw.Elapsed;
+            System.Console.WriteLine("总共花费{0}分钟.", ts2.TotalMinutes);
             System.Console.ReadKey();
         }
 
