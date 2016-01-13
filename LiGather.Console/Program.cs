@@ -22,7 +22,7 @@ namespace LiGather.Console
             //Proxy.Proxy.GetInstance().ValidateCanUse(7);
 
             //待查数据初始化
-            //var lists = File.ReadAllLines("E:/1.txt", Encoding.Default).ToList();
+            //var lists = File.ReadAllLines("C:/1.txt", Encoding.Default).ToList();
             //InsertMetadata(lists);
 
             //抓取数据

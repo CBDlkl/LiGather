@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Data.Entity.Migrations;
 using System.Linq;
+using LiGather.DataPersistence.Domain;
 using LiGather.Model.Domain;
+using LiGather.Model.Log;
 
 namespace LiGather.DataPersistence.Proxy
 {
@@ -79,7 +81,13 @@ namespace LiGather.DataPersistence.Proxy
                 var proxyEntity = Db.ProxyEntities.Where(t => t.Id == model.Id && t.CanUse == true).ToList();
                 if (!proxyEntity.Any()) return;
                 Db.ProxyEntities.AddOrUpdate(model);
-                Db.SaveChanges();
+                var i = Db.SaveChanges();
+                if (i == 0)
+                {
+                    Console.WriteLine("EF 内存泄露，启动清扫策略。");
+                    LogDomain.Add(new LogEntity { ErrorDetails = "EF 内存泄露，启动清扫策略。", TriggerTime = DateTime.Now }); //日志记录
+                    Db.Database.ExecuteSqlCommand("update ProxyEntity set CanUse=0 where CanUse!=0");
+                }
                 Console.WriteLine("移除失效代理:{0}:{1}", model.IpAddress, model.Port);
             }
         }
