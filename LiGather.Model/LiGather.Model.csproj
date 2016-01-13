@@ -50,7 +50,9 @@
   <ItemGroup>
     <Compile Include="Domain\CrawlerEntity.cs" />
     <Compile Include="Domain\ProxyEntity.cs" />
+    <Compile Include="Log\LogEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TargeCompanyEntity.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

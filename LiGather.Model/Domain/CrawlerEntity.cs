@@ -14,6 +14,7 @@ namespace LiGather.Model.Domain
 
         #region 正文
         public string 名称 { set; get; }
+        public string 全局唯一编号 { set; get; }
         public string 统一社会信用代码 { get; set; }
         public string 类型 { get; set; }
         public string 法定代表人 { get; set; }

@@ -1,4 +1,5 @@
-﻿using System.Data.Entity.Migrations;
+﻿using System;
+using System.Data.Entity.Migrations;
 using System.Linq;
 using LiGather.Model.Domain;
 
@@ -67,6 +68,18 @@ namespace LiGather.DataPersistence.Proxy
             {
                 Db.ProxyEntities.AddOrUpdate(model);
                 Db.SaveChanges();
+            }
+        }
+
+        public static void LockUpdate(ProxyEntity model)
+        {
+            lock (Db)
+            {
+                var proxyEntity = Db.ProxyEntities.Where(t => t.Id == model.Id && t.CanUse == true).ToList();
+                if (!proxyEntity.Any()) return;
+                Db.ProxyEntities.AddOrUpdate(model);
+                Db.SaveChanges();
+                Console.WriteLine("移除失效代理:{0}:{1}", model.IpAddress, model.Port);
             }
         }
     }

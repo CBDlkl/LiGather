@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using FSLib.Network.Http;
 using Ivony.Html;
-using Ivony.Html.ExpandedAPI;
 using Ivony.Html.Parser;
 using LiGather.DataPersistence.Domain;
 using LiGather.DataPersistence.Proxy;
+using LiGather.Model;
 using LiGather.Model.Domain;
+using LiGather.Model.Log;
 using LiGather.Util;
+using LiGather.Util.URL;
 
 namespace LiGather.Crawler.Bjqyxy
 {
@@ -58,10 +60,15 @@ namespace LiGather.Crawler.Bjqyxy
         const string zhuUrl = "http://211.94.187.236/xycx/queryCreditAction!qyxq_view.dhtml";
         #endregion
 
+        /// <summary>
+        /// 本次查询统计时间
+        /// </summary>
+        private static DateTime SearchTime { set; get; }
         readonly HttpClient _client;
 
-        public BjCrawler()
+        public BjCrawler(DateTime searchTime)
         {
+            SearchTime = searchTime;
             _client = new HttpClient();
             _client.Setting.Timeout = 1000 * 5;
             _client.Create<string>(HttpMethod.Post, firsturl).Send();
@@ -70,14 +77,32 @@ namespace LiGather.Crawler.Bjqyxy
         /// <summary>
         /// 爬虫逻辑
         /// </summary>
-        /// <param name="companyName">企业名称</param>
         /// <returns></returns>
-        public void CrawlerWork(string companyName)
+        public void CrawlerWork(int taskNum)
         {
+            var tasks = new Task[taskNum];
+            for (var i = 0; i < taskNum; i++)
+            {
+                var task = new Task(BaseWork);
+                task.Start();
+                tasks[i] = task;
+            }
+            Task.WaitAll(tasks);
+            //Console.WriteLine("所有任务已经完成 {0}", DateTime.Now);
+        }
+
+        private void BaseWork()
+        {
+            var companyEntity = new TargeCompanyEntity();
             while (true)
             {
                 try
                 {
+                    Thread.Sleep(250);
+                    companyEntity = TargeCompanyDomain.GetSingel();
+                    if (companyEntity == null)
+                        break;
+                    var companyName = companyEntity.CompanyName;
                     var proxyEntity = ProxyDomain.GetByRandom(); //代理IP
                     if (proxyEntity == null)
                     {
@@ -85,7 +110,6 @@ namespace LiGather.Crawler.Bjqyxy
                         proxyEntity = Proxy.Proxy.GetInstance().GetHttProxyEntity();
                         Console.WriteLine("线上获取到了代理：{0}:{1}", proxyEntity.IpAddress, proxyEntity.Port);
                     }
-                    Thread.Sleep(250);
                     _client.Setting.Proxy = new WebProxy(proxyEntity.IpAddress, proxyEntity.Port);
                     var resultBody = _client.Create<string>(HttpMethod.Post, targetUrl, data: new
                     {
@@ -113,6 +137,7 @@ namespace LiGather.Crawler.Bjqyxy
                     //提取目标正文
                     var resultsecondBody =
                         _client.Create<string>(HttpMethod.Get, zhuUrl + new Uri(firsturl + nextUrl).Query).Send();
+                    var nameValueCollection = new NameValueCollection(URL.GetQueryString(new Uri(firsturl + nextUrl).Query));
                     if (!resultsecondBody.IsValid())
                     {
                         RemoveIp(proxyEntity); continue;
@@ -124,18 +149,24 @@ namespace LiGather.Crawler.Bjqyxy
                     var sorceIhtml = new JumonyParser().Parse(resultsecondBody.Result.Replace("<th", "<td"));
                     var tableLists = sorceIhtml.Find("table").ToList();
                     var listall = new List<string>();
-                    foreach (var htmlElement in tableLists)
-                        htmlElement.Find("tr td").ForEach(t => listall.Add(t.InnerText().TrimEnd(':').TrimEnd('：').Trim()));
+                    foreach (var tableList in tableLists)
+                        tableList.Find("tr td").ForEach(t => listall.Add(t.InnerText().TrimEnd(':').TrimEnd('：').Trim()));
                     var model = FillModel(listall, companyName);
+                    model.全局唯一编号 = nameValueCollection["reg_bus_ent_id"]; //全局唯一编号
+                    CrawlerDomain.Add(model);
 
+                    //后续其他处理 包括了IP使用状态，以查询列表状态
                     proxyEntity.Usage = proxyEntity.Usage + 1;
                     ProxyDomain.Update(proxyEntity);
-                    CrawlerDomain.Add(model);
-                    break;
+
+                    Console.WriteLine("{0} 抓取到：{1}", Task.CurrentId, model.搜索名称);
+
                 }
                 catch (Exception e)
                 {
-                    throw;
+                    companyEntity.IsAbnormal = true;
+                    TargeCompanyDomain.Update(companyEntity);
+                    LogDomain.Add(new LogEntity { ErrorDetails = e.Message, TriggerTime = DateTime.Now });
                 }
             }
         }
@@ -147,8 +178,7 @@ namespace LiGather.Crawler.Bjqyxy
         {
             model.CanUse = false;
             model.LastUseTime = DateTime.Now;
-            Console.WriteLine("移除失效代理:{0}:{1}", model.IpAddress, model.Port);
-            ProxyDomain.Update(model);
+            ProxyDomain.LockUpdate(model);
         }
 
         private bool ValidText(string html)
@@ -179,7 +209,7 @@ namespace LiGather.Crawler.Bjqyxy
             }
             model.搜索名称 = searchName;
             model.更新时间 = DateTime.Now;
-            model.入库时间 = DateTime.Now;
+            model.入库时间 = SearchTime;
             model.是否为历史名称 = model.搜索名称.Contains(model.名称 ?? "");
 
             return model;
