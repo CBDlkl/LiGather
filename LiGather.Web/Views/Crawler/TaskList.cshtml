@@ -1,0 +1,79 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <script src="~/Content/bootstrap/js/jquery-1.11.3.js"></script>
+    <script src="~/Content/bootstrap/js/bootstrap.js" type="text/javascript"></script>
+    <link href="~/Content/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div class="container">
+        <br />
+        <div class="row">
+            <div class="col-lg-12">
+                <form class="bs-example bs-example-form" role="form">
+                    <div class="input-group">
+                        <input type="text" class="form-control">
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button">
+                                查  询
+                            </button>
+                        </span>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <p>
+                    <button type="button" class="btn btn-primary">创建新任务</button>
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-bordered">
+                        <thead>
+                        <tr>
+                            <td class="text-center">
+                                任务名称
+                            </td>
+                            <td class="text-center">
+                                任务进度
+                            </td>
+                            <td class="text-center">
+                                任务创建人
+                            </td>
+                            <td class="text-center">
+                                创建时间
+                            </td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="mail-subject">
+                                <span class="glyphicon glyphicon-tag"></span>
+                                功能区抓取任务
+                            </td>
+                            <td>
+                                <div class="progress progress-striped active m-b-sm" style="margin-bottom: 0px;">
+                                    <div style="width: 90%;" class="progress-bar">
+                                        <small>当前已完成项目总进度的 <strong>60%</strong></small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-right">李科笠</td>
+                            <td class="text-right">2016年1月13日 11:31:08</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
