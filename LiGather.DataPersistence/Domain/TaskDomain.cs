@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Entity;
+using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Linq.Expressions;
 using LiGather.Model.WebDomain;
@@ -28,6 +29,14 @@ namespace LiGather.DataPersistence.Domain
                     return _db.TaskEntities.Include(t => t.TaskStateDic).Where(expression);
                 else
                     return _db.TaskEntities.Include(t => t.TaskStateDic);
+            }
+        }
+
+        public void Update(TaskEntity model)
+        {
+            lock (_obj)
+            {
+                _db.TaskEntities.AddOrUpdate(model);
             }
         }
     }

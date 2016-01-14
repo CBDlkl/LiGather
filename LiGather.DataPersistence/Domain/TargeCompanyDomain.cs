@@ -3,6 +3,7 @@ using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Linq.Expressions;
 using LiGather.Model;
+using LiGather.Model.Domain;
 
 namespace LiGather.DataPersistence.Domain
 {
@@ -21,7 +22,20 @@ namespace LiGather.DataPersistence.Domain
         }
 
         /// <summary>
-        /// 获取一个非以查询，非异常状态的企业实体
+        /// 按照条件获取数据和
+        /// </summary>
+        /// <param name="where"></param>
+        /// <returns></returns>
+        public static int GetInt(Expression<Func<TargeCompanyEntity, bool>> where)
+        {
+            lock (Obj)
+            {
+                return Db.TrCompanyEntities.Count(where);
+            }
+        }
+
+        /// <summary>
+        /// 获取一个非以查询，非异常状态的企业实体，同时更新为已搜索状态
         /// </summary>
         /// <returns></returns>
         public static TargeCompanyEntity GetSingel(Expression<Func<TargeCompanyEntity, bool>> where)

@@ -1,4 +1,6 @@
 ﻿@using LiGather.Model.WebDomain
+@using LiGather.Web.App_Code
+@using Timer = LiGather.Util.Timer
 @model List<TaskEntity>
 
 @{
@@ -49,19 +51,19 @@
                 <div class="table-responsive">
                     <table class="table table-hover table-striped table-bordered">
                         <thead>
-                            <tr>
+                            <tr class="active">
                                 <td class="text-center">
                                     任务名称
                                 </td>
                                 <td class="text-center">
                                     总任务数
                                 </td>
-                                <td class="text-center" style="width: 300px;">
+                                <td class="text-center" style="width: 400px;">
                                     任务进度
                                 </td>
-                                <td class="text-center">
-                                    已运行
-                                </td>
+                                @*<td class="text-center">
+                                        已运行
+                                    </td>*@
                                 <td class="text-center">
                                     任务创建人
                                 </td>
@@ -71,6 +73,7 @@
                                 <td class="text-center">
                                     任务状态
                                 </td>
+                                <td style="width: 0;"></td>
                             </tr>
                         </thead>
                         <tbody>
@@ -85,23 +88,88 @@
                                         @taskEntity.TaskNum
                                     </td>
                                     <td>
-                                        <div class="progress progress-striped active" style="margin-bottom: 0px;">
-                                            <div style="width: 90%;" class="task01 progress-bar">
-                                                <strong>90%</strong>
+                                        <div class="progress progress-striped active" style="margin-bottom: 0;">
+                                            <div style="width: 1%;" class="progress-bar @taskEntity.Unique">
+                                                <strong>1%</strong>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="text-right">7时50分14秒</td>
+                                    @*<td class="text-right">
+                                            @if (taskEntity.EndTime == null)
+                                            {
+                                                @Timer.DateDiff(DateTime.Now, taskEntity.CreateTime);
+                                            }
+                                            else
+                                            {
+                                                @Timer.DateDiff((DateTime)taskEntity.EndTime, taskEntity.CreateTime)
+                                            }
+                                        </td>*@
                                     <td class="text-right">
                                         @taskEntity.OperatorName
                                     </td>
                                     <td class="text-right">
                                         @taskEntity.CreateTime.ToString("yyyy年MM月dd日 hh时mm分ss秒")
                                     </td>
-                                    <td class="text-center">
-                                        <span class="label label-info">
-                                            @taskEntity.TaskStateDic.TaskStateName
-                                        </span>
+                                    <td class="text-center" id="@taskEntity.Unique">
+                                        @Html.LabelForState(taskEntity.TaskStateDic.TaskStateName, taskEntity.TaskStateDic.LabelClass)
+                                    </td>
+                                    <td>
+                                        <script type="text/javascript">
+                                            (function ($) {
+                                                var $task = $('div.@taskEntity.Unique');
+                                                function checkInsert() {
+                                                    var i = 0;
+                                                    var insertInterval = setInterval(function () {
+                                                        if (i == parseInt('@taskEntity.TaskNum')) {
+                                                            goGather();
+                                                            window.clearInterval(insertInterval);
+                                                        }
+                                                        $.post('@Url.Action("CheckInsertMetadata")', { Unique: '@taskEntity.Unique' }, function (data) {
+                                                            i = data.num;
+                                                            var percentage = Percentage(data.num, parseInt('@taskEntity.TaskNum'));
+                                                            $task.css('width', percentage + "%");
+                                                            $task.find("strong").text(percentage + "%");
+                                                        });
+                                                    }, 1000);
+                                                };
+
+                                                var $labelSpan = $('td#@taskEntity.Unique span');
+                                                function goGather() {
+                                                    $.post('@Url.Action("GoGather")', { OperatorName: '@taskEntity.OperatorName', Unique: '@taskEntity.Unique' }, function (data) {
+                                                        $labelSpan.attr('class', 'label label-warning').text('数据抓取中');
+                                                        //启动监听
+                                                        checkGather();
+                                                    });
+                                                };
+
+                                                function checkGather() {
+                                                    var i;
+                                                    var gatherInterval = setInterval(function () {
+                                                        if (i == parseInt('@taskEntity.TaskNum')) {
+                                                            var $a = $('<a href=\'@Url.Action("Export")/unique=@taskEntity.Unique\'></a>');
+                                                            $a.append($labelSpan.attr('class', 'label label-success').text('采集完成/下载'));
+                                                            $('td#@taskEntity.Unique').html('').append($a);
+                                                            window.clearInterval(gatherInterval);
+                                                        }
+                                                        $.post('@Url.Action("CheckGoGather")', { Unique: '@taskEntity.Unique' }, function (data) {
+                                                            i = data.num;
+                                                            var percentage = Percentage(data.num, parseInt('@taskEntity.TaskNum'));
+                                                            $task.css('width', percentage + "%");
+                                                            $task.find("strong").text(percentage + "%");
+                                                        });
+                                                    }, 1000);
+                                                };
+
+                                                @if (taskEntity.TaskStateDicId == 1)
+                                                {
+                                                    @:checkInsert();
+                                                }
+                                                @if (taskEntity.TaskStateDicId == 2)
+                                                {
+                                                    @:checkGather();
+                                                }
+                                            })(jQuery);
+                                        </script>
                                     </td>
                                 </tr>
                             }
@@ -125,18 +193,9 @@
             });
         };
 
-        var i = 0;
-        setInterval(function () {
-            var $task = $(".task01");
-            if (i >= 100)
-                i = 100;
-            $task.css('width', i + "%");
-            $task.find("strong").text(i + "%");
-            if (i >= 100)
-                return;
-            i = i + 10;
-            //console.debug(i);
-        }, 1000);
+        function Percentage(num, total) {
+            return (Math.round(num / total * 10000) / 100.00);
+        }
     </script>
 </body>
 </html>

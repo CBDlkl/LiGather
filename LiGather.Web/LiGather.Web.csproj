@@ -122,6 +122,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Code\LaberHtmlHelper.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\CrawlerController.cs" />
     <Compile Include="Global.asax.cs">
@@ -169,6 +170,10 @@
     <ProjectReference Include="..\LiGather.Proxy\LiGather.Proxy.csproj">
       <Project>{01934ab1-9304-40ed-a9cc-99626c0f6619}</Project>
       <Name>LiGather.Proxy</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LiGather.Util\LiGather.Util.csproj">
+      <Project>{c4bebc74-8b35-452f-8c9f-2d7dc9409e7d}</Project>
+      <Name>LiGather.Util</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

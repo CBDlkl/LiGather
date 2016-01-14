@@ -1,4 +1,7 @@
-﻿using LiGather.Model.Domain;
+﻿using System;
+using System.Linq;
+using System.Linq.Expressions;
+using LiGather.Model.Domain;
 
 namespace LiGather.DataPersistence.Domain
 {
@@ -13,6 +16,14 @@ namespace LiGather.DataPersistence.Domain
             {
                 Db.CrawlerEntities.Add(model);
                 Db.SaveChanges();
+            }
+        }
+
+        public static IQueryable<CrawlerEntity> Get(Expression<Func<CrawlerEntity, bool>> expression)
+        {
+            lock (Obj)
+            {
+                return Db.CrawlerEntities.Where(expression);
             }
         }
     }

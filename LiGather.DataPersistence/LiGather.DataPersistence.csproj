@@ -53,6 +53,7 @@
     <Compile Include="Domain\LogDomain.cs" />
     <Compile Include="Domain\TargeCompanyDomain.cs" />
     <Compile Include="Domain\TaskDomain.cs" />
+    <Compile Include="Domain\TaskStateDicDomain.cs" />
     <Compile Include="LiGatherContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Proxy\ProxyDomain.cs" />

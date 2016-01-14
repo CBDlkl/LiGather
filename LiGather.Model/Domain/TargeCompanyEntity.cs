@@ -2,12 +2,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LiGather.Model
+namespace LiGather.Model.Domain
 {
     public class TargeCompanyEntity
     {
         [Key]
         public int Id { set; get; }
+        [Display(Name = "任务唯一编号")]
+        public Guid TaskGuid { set; get; }
         [Description("企业名称")]
         public string CompanyName { set; get; }
         [Description("操作人姓名")]

@@ -66,10 +66,10 @@
             var options = {
                 success: function (data) {
                     layer.close(index);
-                    console.debug(data);
-                    parent.layer.alert(data.msg, function (index) {
-                        layer.close(index);
-                        parent.layer.close(parent.layer.getFrameIndex(window.name));
+                    parent.layer.alert(data.msg, function (d) {
+                        window.parent.location.reload();
+                        //parent.layer.close(d);
+                        //parent.layer.close(parent.layer.getFrameIndex(window.name));
                     });
                 }
             };

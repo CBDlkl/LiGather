@@ -98,8 +98,9 @@ namespace LiGather.Crawler.Bjqyxy
         /// <summary>
         /// 爬虫逻辑
         /// </summary>
-        /// <returns></returns>
-        public void CrawlerWork(int taskNum)
+        /// <param name="taskNum">线程数</param>
+        /// <param name="isWait">是否等待完成</param>
+        public void CrawlerWork(int taskNum, bool isWait = true)
         {
             var tasks = new Task[taskNum];
             for (var i = 0; i < taskNum; i++)
@@ -108,8 +109,11 @@ namespace LiGather.Crawler.Bjqyxy
                 tasks[i] = task;
                 task.Start();
             }
-            Task.WaitAll(tasks);
-            Console.WriteLine("所有任务已经完成 {0}", DateTime.Now);
+            if (isWait)
+            {
+                Task.WaitAll(tasks);
+                Console.WriteLine("所有任务已经完成 {0}", DateTime.Now);
+            }
         }
 
         private void BaseWork()

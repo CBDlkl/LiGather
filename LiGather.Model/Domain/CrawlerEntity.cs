@@ -58,6 +58,7 @@ namespace LiGather.Model.Domain
 
         #endregion
 
+        public Guid TaskGuid { set; get; }
         public string 操作人姓名 { get; set; }
         public DateTime? 入爬行库时间 { set; get; }
         public DateTime? 爬行更新时间 { set; get; }
