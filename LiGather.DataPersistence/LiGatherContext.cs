@@ -3,6 +3,7 @@ using System.Data.Entity.ModelConfiguration.Conventions;
 using LiGather.Model;
 using LiGather.Model.Domain;
 using LiGather.Model.Log;
+using LiGather.Model.WebDomain;
 
 namespace LiGather.DataPersistence
 {
@@ -17,6 +18,8 @@ namespace LiGather.DataPersistence
         public DbSet<CrawlerEntity> CrawlerEntities { set; get; }
         public DbSet<TargeCompanyEntity> TrCompanyEntities { set; get; }
         public DbSet<LogEntity> LogEntities { set; get; }
+        public DbSet<TaskEntity> TaskEntities { set; get; }
+        public DbSet<TaskStateDic> TaskStateDics { set; get; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

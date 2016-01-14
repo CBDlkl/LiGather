@@ -53,6 +53,8 @@
     <Compile Include="Log\LogEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TargeCompanyEntity.cs" />
+    <Compile Include="WebDomain\TaskEntity.cs" />
+    <Compile Include="WebDomain\TaskStateDic.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

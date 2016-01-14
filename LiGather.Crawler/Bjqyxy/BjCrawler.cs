@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,11 +66,30 @@ namespace LiGather.Crawler.Bjqyxy
         /// 本次查询统计时间
         /// </summary>
         private static DateTime SearchTime { set; get; }
-        readonly HttpClient _client;
+        /// <summary>
+        /// 操作人
+        /// </summary>
+        private static string Operator { set; get; }
+        /// <summary>
+        /// 企业名单检索条件
+        /// </summary>
+        private Expression<Func<TargeCompanyEntity, bool>> QueryCondition { set; get; }
+        /// <summary>
+        /// HTTP访问对象
+        /// </summary>
+        private readonly HttpClient _client;
 
-        public BjCrawler(DateTime searchTime)
+        /// <summary>
+        /// 北京企业信用信息网 爬虫
+        /// 维护时间：2016年1月14日 09:57:04
+        /// </summary>
+        /// <param name="operatorName">操作人</param>
+        /// <param name="queryCondition">企业名单检索条件</param>
+        public BjCrawler(string operatorName, Expression<Func<TargeCompanyEntity, bool>> queryCondition)
         {
-            SearchTime = searchTime;
+            Operator = operatorName;
+            QueryCondition = queryCondition;
+            SearchTime = DateTime.Now;
             _client = new HttpClient();
             _client.Setting.Timeout = 1000 * 5;
             _client.Create<string>(HttpMethod.Post, firsturl).Send();
@@ -93,49 +114,69 @@ namespace LiGather.Crawler.Bjqyxy
 
         private void BaseWork()
         {
+            bool isReloadCompany = true; //是否重新获取新的企业名称
+            string companyOld = "";
             var companyEntity = new TargeCompanyEntity();
             while (true)
             {
-                var targetModel = new CrawlerEntity();
+                var targetModel = new CrawlerEntity { 操作人姓名 = Operator, 入爬行库时间 = SearchTime };
                 try
                 {
                     Thread.Sleep(250);
-                    companyEntity = TargeCompanyDomain.GetSingel();
-                    if (companyEntity == null)
-                        break;
-                    var companyName = companyEntity.CompanyName;
-                    targetModel.搜索名称 = companyName; //搜索名称，直接持久化
+                    //查询资源预处理
+                    if (isReloadCompany)
+                    {
+                        companyEntity = TargeCompanyDomain.GetSingel(QueryCondition);
+                        if (companyEntity == null)
+                            break;
+                        targetModel.搜索名称 = companyEntity.CompanyName; //搜索名称，直接持久化
+                        companyOld = targetModel.搜索名称;
+                        isReloadCompany = false;
+                    }
+                    else
+                    {
+                        targetModel.搜索名称 = companyOld;
+                    }
+
+                    //IP处理
                     var proxyEntity = ProxyDomain.GetByRandom(); //代理IP
                     if (proxyEntity == null)
                     {
-                        Console.WriteLine("没有可用代理，在线代理临时获取策略启动");
+                        Console.WriteLine("在线代理临时获取策略启动。");
                         proxyEntity = Proxy.Proxy.GetInstance().GetHttProxyEntity();
                         Console.WriteLine("线上获取到了代理：{0}:{1}", proxyEntity.IpAddress, proxyEntity.Port);
                     }
+
                     _client.Setting.Proxy = new WebProxy(proxyEntity.IpAddress, proxyEntity.Port);
                     var resultBody = _client.Create<string>(HttpMethod.Post, targetUrl, data: new
                     {
-                        queryStr = companyName,
+                        queryStr = targetModel.搜索名称,
                         module = "",
                         idFlag = "qyxy"
                     }).Send();
-                    var nextUrl = "";
                     if (!resultBody.IsValid())
                     {
-                        RemoveIp(proxyEntity);
+                        RemoveOldIp(proxyEntity);
                         continue;
                     }
                     if (ValidText(resultBody.Result))
                     {
-                        RemoveIp(proxyEntity);
+                        RemoveOldIp(proxyEntity);
                         continue;
                     }
                     //提取二级连接
                     var parser = new JumonyParser();
-                    var document = parser.Parse(resultBody.Result).Find("li a");
-                    foreach (var htmlElement in document)
+                    var urls = parser.Parse(resultBody.Result).Find("li a").ToList();
+                    var nextUrl = "";
+                    if (urls.Count < 1)
                     {
-                        companyName = htmlElement.InnerText();
+                        isReloadCompany = true;
+                        AddNull(targetModel);
+                        continue;
+                    }
+                    foreach (var htmlElement in urls)
+                    {
+                        targetModel.名称 = htmlElement.InnerText();
                         nextUrl = url + htmlElement.Attribute("href").AttributeValue;
                     }
                     //提取目标正文
@@ -145,24 +186,25 @@ namespace LiGather.Crawler.Bjqyxy
                         new NameValueCollection(URL.GetQueryString(new Uri(firsturl + nextUrl).Query));
                     if (!resultsecondBody.IsValid())
                     {
-                        RemoveIp(proxyEntity);
+                        RemoveOldIp(proxyEntity);
                         continue;
                     }
-                    if (ValidText(resultBody.Result))
+                    if (ValidText(resultsecondBody.Result))
                     {
-                        RemoveIp(proxyEntity);
+                        RemoveOldIp(proxyEntity);
                         continue;
                     }
+
+                    //正文处理
                     var sorceIhtml = new JumonyParser().Parse(resultsecondBody.Result.Replace("<th", "<td"));
-                    var tableLists = sorceIhtml.Find("table").ToList();
+                    var tableLists = sorceIhtml.Find("table[class='f-lbiao']").ToList();
                     var listall = new List<string>();
                     foreach (var tableList in tableLists)
                         tableList.Find("tr td")
                             .ForEach(t => listall.Add(t.InnerText().TrimEnd(':').TrimEnd('：').Trim()));
-                    targetModel = FillModel(listall, targetModel.搜索名称);
-                    targetModel.全局唯一编号 = nameValueCollection["reg_bus_ent_id"]; //全局唯一编号
-                    //CrawlerDomain.Add(targetModel);
-
+                    var fillModel = FillModel(listall);
+                    fillModel.全局唯一编号 = nameValueCollection["reg_bus_ent_id"];
+                    CrawlerDomain.Add(StrategyNo1(fillModel, targetModel));
                     //后续其他处理 包括了IP使用状态，以查询列表状态
                     proxyEntity.Usage = proxyEntity.Usage + 1;
                     ProxyDomain.Update(proxyEntity);
@@ -170,25 +212,28 @@ namespace LiGather.Crawler.Bjqyxy
                 }
                 catch (Exception e)
                 {
-                    if (companyEntity != null)
-                    {
-                        companyEntity.IsAbnormal = true;
-                        TargeCompanyDomain.Update(companyEntity);
-                    }
+                    companyEntity.IsAbnormal = true;
+                    TargeCompanyDomain.Update(companyEntity);
                     LogDomain.Add(new LogEntity { ErrorDetails = e.Message, TriggerTime = DateTime.Now });
+                    AddNull(targetModel);
                 }
-                finally
-                {
-                    CrawlerDomain.Add(targetModel);
-                    Console.WriteLine("{0} 空对象：{1}", Task.CurrentId, targetModel.搜索名称);
-                }
+                isReloadCompany = true;
             }
+        }
+
+        /// <summary>
+        /// 因为异常或者没有检索到值 执行空插入
+        /// </summary>
+        private void AddNull(CrawlerEntity targetModel)
+        {
+            CrawlerDomain.Add(targetModel);
+            Console.WriteLine("{0} 空对象：{1}", Task.CurrentId, targetModel.搜索名称);
         }
 
         /// <summary>
         /// 移除失效代理
         /// </summary>
-        private void RemoveIp(ProxyEntity model)
+        private void RemoveOldIp(ProxyEntity model)
         {
             model.CanUse = false;
             model.LastUseTime = DateTime.Now;
@@ -201,12 +246,11 @@ namespace LiGather.Crawler.Bjqyxy
         }
 
         /// <summary>
-        /// 填充
+        /// 生成抓取的充血模型
         /// </summary>
         /// <param name="scoreList"></param>
-        /// <param name="searchName"></param>
         /// <returns></returns>
-        private static CrawlerEntity FillModel(List<string> scoreList, string searchName)
+        private CrawlerEntity FillModel(List<string> scoreList)
         {
             var model = new CrawlerEntity();
             var info = model.GetType().GetProperties();
@@ -221,11 +265,23 @@ namespace LiGather.Crawler.Bjqyxy
                 else
                     item.SetValue(model, scoreList[index + 1], null);
             }
-            model.搜索名称 = searchName;
-            model.更新时间 = DateTime.Now;
-            model.入库时间 = SearchTime;
-            model.是否为历史名称 = model.搜索名称.Contains(model.名称 ?? "");
             return model;
+        }
+
+        /// <summary>
+        /// 生成策略
+        /// </summary>
+        /// <param name="fillModel">数据容器</param>
+        /// <param name="appendEntity">补充用数据容器</param>
+        /// <returns></returns>
+        private CrawlerEntity StrategyNo1(CrawlerEntity fillModel, CrawlerEntity appendEntity)
+        {
+            fillModel.搜索名称 = appendEntity.搜索名称;
+            fillModel.操作人姓名 = appendEntity.操作人姓名;
+            fillModel.名称 = string.IsNullOrWhiteSpace(fillModel.名称) ? appendEntity.名称 : fillModel.名称;
+            fillModel.入爬行库时间 = appendEntity.入爬行库时间;
+            fillModel.爬行更新时间 = DateTime.Now;
+            return fillModel;
         }
     }
 }

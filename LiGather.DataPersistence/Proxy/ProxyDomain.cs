@@ -12,18 +12,18 @@ namespace LiGather.DataPersistence.Proxy
     /// </summary>
     public class ProxyDomain
     {
-        private static readonly object obj = new object();
+        private static readonly object Obj = new object();
         private static readonly LiGatherContext Db = new LiGatherContext();
 
         public static bool IsExist(ProxyEntity model)
         {
-            lock (obj)
+            lock (Obj)
                 return Db.ProxyEntities.Any(t => t.IpAddress == model.IpAddress);
         }
 
         public static ProxyEntity GetById(int id)
         {
-            lock (obj)
+            lock (Obj)
             {
                 return Db.ProxyEntities.OrderBy(t => t.LastUseTime).SingleOrDefault(t => t.Id == id);
             }
@@ -31,7 +31,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public static ProxyEntity GetByRandom()
         {
-            lock (obj)
+            lock (Obj)
             {
                 //随机取
                 //var idLists = Db.ProxyEntities.Where(t => t.CanUse == true).Select(t => t.Id).ToList();
@@ -42,7 +42,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public static int GetMaxId()
         {
-            lock (obj)
+            lock (Obj)
             {
                 return Db.ProxyEntities.Max(t => t.Id);
             }
@@ -50,7 +50,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public static ProxyEntity Get(ProxyEntity model)
         {
-            lock (obj)
+            lock (Obj)
             {
                 return Db.ProxyEntities.SingleOrDefault(t => t.Id == model.Id);
             }
@@ -58,7 +58,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public static void Add(ProxyEntity model)
         {
-            lock (obj)
+            lock (Obj)
             {
                 Db.ProxyEntities.Add(model);
                 Db.SaveChanges();
@@ -67,7 +67,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public static void Update(ProxyEntity model)
         {
-            lock (obj)
+            lock (Obj)
             {
                 Db.ProxyEntities.AddOrUpdate(model);
                 Db.SaveChanges();
@@ -76,7 +76,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public static void LockUpdate(ProxyEntity model)
         {
-            lock (obj)
+            lock (Obj)
             {
                 var proxyEntity = Db.ProxyEntities.Where(t => t.Id == model.Id && t.CanUse == true).ToList();
                 if (!proxyEntity.Any()) return;
@@ -85,7 +85,8 @@ namespace LiGather.DataPersistence.Proxy
                 if (i == 0)
                 {
                     Console.WriteLine("EF 内存泄露，启动清扫策略。");
-                    LogDomain.Add(new LogEntity { ErrorDetails = "EF 内存泄露，启动清扫策略。", TriggerTime = DateTime.Now }); //日志记录
+                    //日志记录
+                    LogDomain.Add(new LogEntity { ErrorDetails = "EF 内存泄露，启动清扫策略。", TriggerTime = DateTime.Now }); 
                     Db.Database.ExecuteSqlCommand("update ProxyEntity set CanUse=0 where CanUse!=0");
                 }
                 Console.WriteLine("移除失效代理:{0}:{1}", model.IpAddress, model.Port);

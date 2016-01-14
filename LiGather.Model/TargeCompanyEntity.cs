@@ -10,6 +10,8 @@ namespace LiGather.Model
         public int Id { set; get; }
         [Description("企业名称")]
         public string CompanyName { set; get; }
+        [Description("操作人姓名")]
+        public string OperatorName { set; get; }
         [Description("录入时间")]
         public DateTime? CreateTime { set; get; }
         [Description("是否检索完毕")]

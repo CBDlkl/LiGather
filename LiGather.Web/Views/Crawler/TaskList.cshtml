@@ -1,4 +1,6 @@
-﻿
+﻿@using LiGather.Model.WebDomain
+@model List<TaskEntity>
+
 @{
     Layout = null;
 }
@@ -47,95 +49,94 @@
                 <div class="table-responsive">
                     <table class="table table-hover table-striped table-bordered">
                         <thead>
-                        <tr>
-                            <td class="text-center">
-                                任务名称
-                            </td>
-                            <td class="text-center">
-                                总任务数
-                            </td>
-                            <td class="text-center">
-                                任务进度
-                            </td>
-                            <td class="text-center">
-                                任务创建人
-                            </td>
-                            <td class="text-center">
-                                已运行
-                            </td>
-                            <td class="text-center">
-                                创建时间
-                            </td>
-                            <td class="text-center">
-                                任务状态
-                            </td>
-                        </tr>
+                            <tr>
+                                <td class="text-center">
+                                    任务名称
+                                </td>
+                                <td class="text-center">
+                                    总任务数
+                                </td>
+                                <td class="text-center" style="width: 300px;">
+                                    任务进度
+                                </td>
+                                <td class="text-center">
+                                    已运行
+                                </td>
+                                <td class="text-center">
+                                    任务创建人
+                                </td>
+                                <td class="text-center">
+                                    创建时间
+                                </td>
+                                <td class="text-center">
+                                    任务状态
+                                </td>
+                            </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                            <td>
-                                <span class="glyphicon glyphicon-tag"></span>
-                                功能区抓取任务
-                            </td>
-                            <td class="text-right">
-                                17560
-                            </td>
-                            <td>
-                                <div class="progress progress-striped active" style="margin-bottom: 0px;">
-                                    <div style="width: 90%;" class="progress-bar">
-                                        <small>当前已完成任务总进度的 <strong>90%</strong></small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="text-right">李科笠</td>
-                            <td class="text-right">7时50分14秒</td>
-                            <td class="text-right">2016年1月13日 11:31:08</td>
-                            <td class="text-center">
-                                <span class="label label-info">入库初始化</span>
-                            </td>
-                        </tr>
+                            @foreach (var taskEntity in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="glyphicon glyphicon-tag"></span>
+                                        @taskEntity.TaskName
+                                    </td>
+                                    <td class="text-right">
+                                        @taskEntity.TaskNum
+                                    </td>
+                                    <td>
+                                        <div class="progress progress-striped active" style="margin-bottom: 0px;">
+                                            <div style="width: 90%;" class="task01 progress-bar">
+                                                <strong>90%</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-right">7时50分14秒</td>
+                                    <td class="text-right">
+                                        @taskEntity.OperatorName
+                                    </td>
+                                    <td class="text-right">
+                                        @taskEntity.CreateTime.ToString("yyyy年MM月dd日 hh时mm分ss秒")
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="label label-info">
+                                            @taskEntity.TaskStateDic.TaskStateName
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-        <div style="display: none;">
-            <div style="padding: 100px 100px 10px;">
-                <form class="bs-example bs-example-form" role="form">
-                    <div class="input-group input-group-lg">
-                        <span class="input-group-addon">@@</span>
-                        <input type="text" class="form-control" placeholder="Twitterhandle">
-                    </div><br>
-
-                    <div class="input-group">
-                        <span class="input-group-addon">@@</span>
-                        <input type="text" class="form-control" placeholder="Twitterhandle">
-                    </div><br>
-
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-addon">@@</span>
-                        <input type="text" class="form-control" placeholder="Twitterhandle">
-                    </div>
-                </form>
             </div>
         </div>
     </div>
 
     <script type="text/javascript">
         var openNew = function () {
-            layer.alert("新建任务");
             layer.open({
-                type: 1,
-                shade: false,
-                title: false, //不显示标题
-                content: $('.table-responsive'), //捕获的元素
-                cancel: function (index) {
-                    layer.close(index);
-                    this.content.show();
-                    layer.msg('捕获就是从页面已经存在的元素上，包裹layer的结构', { time: 5000, icon: 6 });
-                }
+                type: 2,
+                title: '创建新任务',
+                shadeClose: false,
+                maxmin: true,
+                shade: 0.7,
+                area: ['480px', '350px'],
+                content: '@Url.Action("CreateTask")'
             });
         };
+
+        var i = 0;
+        setInterval(function () {
+            var $task = $(".task01");
+            if (i >= 100)
+                i = 100;
+            $task.css('width', i + "%");
+            $task.find("strong").text(i + "%");
+            if (i >= 100)
+                return;
+            i = i + 10;
+            //console.debug(i);
+        }, 1000);
     </script>
 </body>
 </html>
