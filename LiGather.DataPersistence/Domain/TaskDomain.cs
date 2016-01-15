@@ -37,6 +37,7 @@ namespace LiGather.DataPersistence.Domain
             lock (_obj)
             {
                 _db.TaskEntities.AddOrUpdate(model);
+                _db.SaveChanges();
             }
         }
     }

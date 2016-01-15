@@ -1,6 +1,6 @@
 ﻿@using LiGather.Model.WebDomain
 @using LiGather.Web.App_Code
-@using Timer = LiGather.Util.Timer
+@using Newtonsoft.Json
 @model List<TaskEntity>
 
 @{
@@ -89,8 +89,8 @@
                                     </td>
                                     <td>
                                         <div class="progress progress-striped active" style="margin-bottom: 0;">
-                                            <div style="width: 1%;" class="progress-bar @taskEntity.Unique">
-                                                <strong>1%</strong>
+                                            <div style="width: 0;" class="progress-bar @taskEntity.Unique">
+                                                <strong>0</strong>
                                             </div>
                                         </div>
                                     </td>
@@ -124,7 +124,7 @@
                                                             goGather();
                                                             window.clearInterval(insertInterval);
                                                         }
-                                                        $.post('@Url.Action("CheckInsertMetadata")', { Unique: '@taskEntity.Unique' }, function (data) {
+                                                        $.post('@Url.Action("CheckInsertMetadata")', @Html.Raw( @JsonConvert.SerializeObject(taskEntity)), function (data) {
                                                             i = data.num;
                                                             var percentage = Percentage(data.num, parseInt('@taskEntity.TaskNum'));
                                                             $task.css('width', percentage + "%");
@@ -135,7 +135,7 @@
 
                                                 var $labelSpan = $('td#@taskEntity.Unique span');
                                                 function goGather() {
-                                                    $.post('@Url.Action("GoGather")', { OperatorName: '@taskEntity.OperatorName', Unique: '@taskEntity.Unique' }, function (data) {
+                                                    $.post('@Url.Action("GoGather")',@Html.Raw( @JsonConvert.SerializeObject(taskEntity)), function (data) {
                                                         $labelSpan.attr('class', 'label label-warning').text('数据抓取中');
                                                         //启动监听
                                                         checkGather();
@@ -143,16 +143,16 @@
                                                 };
 
                                                 function checkGather() {
-                                                    var i;
+                                                    var n;
                                                     var gatherInterval = setInterval(function () {
-                                                        if (i == parseInt('@taskEntity.TaskNum')) {
-                                                            var $a = $('<a href=\'@Url.Action("Export")/unique=@taskEntity.Unique\'></a>');
+                                                        if (n == parseInt('@taskEntity.TaskNum')) {
+                                                            var $a = $('<a href=\'@Url.Action("Export")?Unique=@taskEntity.Unique\'></a>');
                                                             $a.append($labelSpan.attr('class', 'label label-success').text('采集完成/下载'));
                                                             $('td#@taskEntity.Unique').html('').append($a);
                                                             window.clearInterval(gatherInterval);
                                                         }
-                                                        $.post('@Url.Action("CheckGoGather")', { Unique: '@taskEntity.Unique' }, function (data) {
-                                                            i = data.num;
+                                                        $.post('@Url.Action("CheckGoGather")', @Html.Raw( @JsonConvert.SerializeObject(taskEntity)), function (data) {
+                                                            n = data.num;
                                                             var percentage = Percentage(data.num, parseInt('@taskEntity.TaskNum'));
                                                             $task.css('width', percentage + "%");
                                                             $task.find("strong").text(percentage + "%");
@@ -163,11 +163,11 @@
                                                 @if (taskEntity.TaskStateDicId == 1)
                                                 {
                                                     @:checkInsert();
-                                                }
+                                                                                                }
                                                 @if (taskEntity.TaskStateDicId == 2)
                                                 {
                                                     @:checkGather();
-                                                }
+                                                                                                }
                                             })(jQuery);
                                         </script>
                                     </td>

@@ -36,8 +36,8 @@ namespace LiGather.Console
             new BaseData(TimeStamp).InsertMetadata(lists, OperatorName, model);
 
             //抓取数据
-            var bjqyxy = new Crawler.Bjqyxy.BjCrawler(model.OperatorName, t => t.TaskGuid.Equals(model.Unique));
-            bjqyxy.CrawlerWork(4);
+            var bjqyxy = new Crawler.Bjqyxy.BjCrawler(model, t => t.TaskGuid.Equals(model.Unique));
+            bjqyxy.CrawlerWork(4, model);
 
             sw.Stop();
             TimeSpan ts2 = sw.Elapsed;

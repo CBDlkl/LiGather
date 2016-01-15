@@ -15,6 +15,7 @@ using LiGather.DataPersistence.Proxy;
 using LiGather.Model;
 using LiGather.Model.Domain;
 using LiGather.Model.Log;
+using LiGather.Model.WebDomain;
 using LiGather.Util;
 using LiGather.Util.URL;
 
@@ -63,13 +64,10 @@ namespace LiGather.Crawler.Bjqyxy
         #endregion
 
         /// <summary>
-        /// 本次查询统计时间
+        /// 任务信息
         /// </summary>
-        private static DateTime SearchTime { set; get; }
-        /// <summary>
-        /// 操作人
-        /// </summary>
-        private static string Operator { set; get; }
+        private TaskEntity TaskEntity { set; get; }
+
         /// <summary>
         /// 企业名单检索条件
         /// </summary>
@@ -83,13 +81,12 @@ namespace LiGather.Crawler.Bjqyxy
         /// 北京企业信用信息网 爬虫
         /// 维护时间：2016年1月14日 09:57:04
         /// </summary>
-        /// <param name="operatorName">操作人</param>
+        /// <param name="model"></param>
         /// <param name="queryCondition">企业名单检索条件</param>
-        public BjCrawler(string operatorName, Expression<Func<TargeCompanyEntity, bool>> queryCondition)
+        public BjCrawler(TaskEntity model, Expression<Func<TargeCompanyEntity, bool>> queryCondition)
         {
-            Operator = operatorName;
+            TaskEntity = model;
             QueryCondition = queryCondition;
-            SearchTime = DateTime.Now;
             _client = new HttpClient();
             _client.Setting.Timeout = 1000 * 5;
             _client.Create<string>(HttpMethod.Post, firsturl).Send();
@@ -99,8 +96,8 @@ namespace LiGather.Crawler.Bjqyxy
         /// 爬虫逻辑
         /// </summary>
         /// <param name="taskNum">线程数</param>
-        /// <param name="isWait">是否等待完成</param>
-        public void CrawlerWork(int taskNum, bool isWait = true)
+        /// <param name="model"></param>
+        public void CrawlerWork(int taskNum, TaskEntity model)
         {
             var tasks = new Task[taskNum];
             for (var i = 0; i < taskNum; i++)
@@ -109,11 +106,10 @@ namespace LiGather.Crawler.Bjqyxy
                 tasks[i] = task;
                 task.Start();
             }
-            if (isWait)
-            {
-                Task.WaitAll(tasks);
-                Console.WriteLine("所有任务已经完成 {0}", DateTime.Now);
-            }
+            Task.WaitAll(tasks);
+            model.TaskStateDicId = 3;
+            new TaskDomain().Update(model);
+            Console.WriteLine("所有任务已经完成 {0}", DateTime.Now);
         }
 
         private void BaseWork()
@@ -123,7 +119,7 @@ namespace LiGather.Crawler.Bjqyxy
             var companyEntity = new TargeCompanyEntity();
             while (true)
             {
-                var targetModel = new CrawlerEntity { 操作人姓名 = Operator, 入爬行库时间 = SearchTime };
+                var targetModel = new CrawlerEntity { 操作人姓名 = TaskEntity.OperatorName, 入爬行库时间 = TaskEntity.CreateTime };
                 try
                 {
                     Thread.Sleep(250);
@@ -216,6 +212,7 @@ namespace LiGather.Crawler.Bjqyxy
                 }
                 catch (Exception e)
                 {
+                    companyEntity.IsSearched = true;
                     companyEntity.IsAbnormal = true;
                     TargeCompanyDomain.Update(companyEntity);
                     LogDomain.Add(new LogEntity { ErrorDetails = e.Message, TriggerTime = DateTime.Now });
