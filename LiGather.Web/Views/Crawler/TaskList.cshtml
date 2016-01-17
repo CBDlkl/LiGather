@@ -146,7 +146,7 @@
                                                     var n;
                                                     var gatherInterval = setInterval(function () {
                                                         if (n == parseInt('@taskEntity.TaskNum')) {
-                                                            var $a = $('<a href=\'@Url.Action("Export")?Unique=@taskEntity.Unique\'></a>');
+                                                            var $a = $('<a href=\'#\' onclick=\"DownLoadConfig(\'@taskEntity.TaskNum\',\'@taskEntity.Unique\')\"></a>');
                                                             $a.append($labelSpan.attr('class', 'label label-success').text('采集完成/下载'));
                                                             $('td#@taskEntity.Unique').html('').append($a);
                                                             window.clearInterval(gatherInterval);
@@ -160,14 +160,27 @@
                                                     }, 1000);
                                                 };
 
+                                                function endShowDown() {
+                                                    var $a = $('<a href=\'#\' onclick=\"DownLoadConfig(\'@taskEntity.TaskNum\',\'@taskEntity.Unique\')\"></a>');
+                                                    $a.append($labelSpan.attr('class', 'label label-success').text('采集完成/下载'));
+                                                    $('td#@taskEntity.Unique').html('').append($a);
+
+                                                    $task.css('width', "100%");
+                                                    $task.find("strong").text("100%");
+                                                };
+
                                                 @if (taskEntity.TaskStateDicId == 1)
                                                 {
                                                     @:checkInsert();
-                                                                                                }
+                                                }
                                                 @if (taskEntity.TaskStateDicId == 2)
                                                 {
                                                     @:checkGather();
-                                                                                                }
+                                                }
+                                                @if (taskEntity.TaskStateDicId == 3)
+                                                {
+                                                    @:endShowDown();
+                                                }
                                             })(jQuery);
                                         </script>
                                     </td>
@@ -195,7 +208,32 @@
 
         function Percentage(num, total) {
             return (Math.round(num / total * 10000) / 100.00);
-        }
+        };
+
+        function DownLoadConfig(num, unique) {
+            layer.open({
+                title: "消息",
+                content: "是否优化导出的Excel（内容自动适配宽度），这需要一小段时间。",
+                btn: ['优化', '直接导出'],
+                yes: function(index, layero) {
+                    DownLoad(num, unique, true);
+                },
+                cancel: function(index) {
+                    DownLoad(num, unique, false);
+                }
+            });
+        };
+
+        function DownLoad(num,unique,isOptimize) {
+            layer.msg('Excel生成中...', { icon: 16, shade: 0.5 }, function() {
+                if (num >= 10000) {
+                    layer.msg('您即将导出的文档较大，请耐心等待！', { icon: 1, shade: 0.5 });
+                    window.open("@Url.Action("Export")?isOptimize=" + isOptimize + "&Unique=" + unique, 'newwindow', 'height=100,width=400,top=0,left=0,toolbar=no,menubar=no,scrollbars=no,resizable=no,location=no,status=no');
+                } else {                                                                                                                                                                                          
+                    window.open("@Url.Action("Export")?isOptimize=" + isOptimize + "&Unique=" + unique, 'newwindow', 'height=100,width=400,top=0,left=0,toolbar=no,menubar=no,scrollbars=no,resizable=no,location=no,status=no');
+                }
+            });
+        };
     </script>
 </body>
 </html>

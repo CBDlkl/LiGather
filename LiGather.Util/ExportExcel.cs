@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 
@@ -16,8 +14,9 @@ namespace LiGather.Util
         /// </summary>
         /// <typeparam name="T">实体类型</typeparam>
         /// <param name="lists">数据源</param>
+        /// <param name="isOptimize">是否自动列宽，默认否</param>
         /// <returns></returns>
-        public static byte[] ListToExcel<T>(this IList<T> lists)
+        public static byte[] ListToExcel<T>(this IList<T> lists, bool isOptimize = false)
         {
             using (MemoryStream ms = new MemoryStream())
             {
@@ -45,8 +44,11 @@ namespace LiGather.Util
                     paymentRowIndex++;
                 }
                 //列宽自适应，只对英文和数字有效
-                for (int i = 0; i <= lists.Count; i++)
-                    paymentSheet.AutoSizeColumn(i);
+                if (isOptimize)
+                {
+                    for (int i = 0; i <= lists.Count; i++)
+                        paymentSheet.AutoSizeColumn(i);
+                }
                 //将表内容写入流 等待下一步操作
                 workbook.Write(ms);
                 return ms.ToArray();

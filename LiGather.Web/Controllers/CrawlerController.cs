@@ -77,13 +77,14 @@ namespace LiGather.Web.Controllers
             return Json(new { state = "doing", num = searchNum });
         }
 
-        public ActionResult Export(TaskEntity model)
+        public ActionResult Export(TaskEntity model, bool isOptimize)
         {
             var crawlerlists = CrawlerDomain.Get(t => t.TaskGuid == model.Unique).ToList();
             if (crawlerlists.Count < 1)
                 return Content("<script>alert('未找到内容');</script>");
-            var bytes = crawlerlists.ListToExcel();
-            return File(bytes, "application/vnd.ms-excel");
+            var bytes = crawlerlists.ListToExcel(isOptimize);
+            return File(bytes, "application/vnd.ms-excel",
+                "导出北京企业采集信息" + DateTime.Now.ToString("yyyy-M-d dddd") + ".xls");
         }
     }
 }
