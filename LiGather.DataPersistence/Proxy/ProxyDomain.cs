@@ -13,81 +13,81 @@ namespace LiGather.DataPersistence.Proxy
     public class ProxyDomain
     {
         private static readonly object Obj = new object();
-        private static readonly LiGatherContext Db = new LiGatherContext();
+        private readonly LiGatherContext _db = new LiGatherContext();
 
-        public static bool IsExist(ProxyEntity model)
+        public bool IsExist(ProxyEntity model)
         {
             lock (Obj)
-                return Db.ProxyEntities.Any(t => t.IpAddress == model.IpAddress);
+                return _db.ProxyEntities.Any(t => t.IpAddress == model.IpAddress);
         }
 
-        public static ProxyEntity GetById(int id)
+        public ProxyEntity GetById(int id)
         {
             lock (Obj)
             {
-                return Db.ProxyEntities.OrderBy(t => t.LastUseTime).SingleOrDefault(t => t.Id == id);
+                return _db.ProxyEntities.OrderBy(t => t.LastUseTime).SingleOrDefault(t => t.Id == id);
             }
         }
 
-        public static ProxyEntity GetByRandom()
+        public ProxyEntity GetByRandom()
         {
             lock (Obj)
             {
                 //随机取
-                //var idLists = Db.ProxyEntities.Where(t => t.CanUse == true).Select(t => t.Id).ToList();
+                //var idLists = _db.ProxyEntities.Where(t => t.CanUse == true).Select(t => t.Id).ToList();
                 //var id = new Random().Next(0, idLists.Count);
-                return Db.ProxyEntities.Where(t => t.CanUse.Value).OrderByDescending(t => t.LastUseTime).FirstOrDefault();
+                return _db.ProxyEntities.Where(t => t.CanUse.Value).OrderByDescending(t => t.LastUseTime).FirstOrDefault();
             }
         }
 
-        public static int GetMaxId()
+        public int GetMaxId()
         {
             lock (Obj)
             {
-                return Db.ProxyEntities.Max(t => t.Id);
+                return _db.ProxyEntities.Max(t => t.Id);
             }
         }
 
-        public static ProxyEntity Get(ProxyEntity model)
+        public ProxyEntity Get(ProxyEntity model)
         {
             lock (Obj)
             {
-                return Db.ProxyEntities.SingleOrDefault(t => t.Id == model.Id);
+                return _db.ProxyEntities.SingleOrDefault(t => t.Id == model.Id);
             }
         }
 
-        public static void Add(ProxyEntity model)
+        public void Add(ProxyEntity model)
         {
             lock (Obj)
             {
-                Db.ProxyEntities.Add(model);
-                Db.SaveChanges();
+                _db.ProxyEntities.Add(model);
+                _db.SaveChanges();
             }
         }
 
-        public static void Update(ProxyEntity model)
+        public void Update(ProxyEntity model)
         {
             lock (Obj)
             {
-                Db.ProxyEntities.AddOrUpdate(model);
-                Db.SaveChanges();
+                _db.ProxyEntities.AddOrUpdate(model);
+                _db.SaveChanges();
             }
         }
 
-        public static void LockUpdate(ProxyEntity model)
+        public void LockUpdate(ProxyEntity model)
         {
             lock (Obj)
             {
-                var proxyEntity = Db.ProxyEntities.Where(t => t.Id == model.Id && t.CanUse == true).ToList();
+                var proxyEntity = _db.ProxyEntities.Where(t => t.Id == model.Id && t.CanUse == true).ToList();
                 if (!proxyEntity.Any()) return;
-                Db.ProxyEntities.AddOrUpdate(model);
-                var i = Db.SaveChanges();
+                _db.ProxyEntities.AddOrUpdate(model);
+                var i = _db.SaveChanges();
                 if (i == 0)
                 {
                     Console.WriteLine("EF 内存泄露，启动清扫策略。");
                     //日志记录
-                    LogDomain.Add(new LogEntity { ErrorDetails = "EF 内存泄露，启动清扫策略。", TriggerTime = DateTime.Now }); 
-                    Db.Database.ExecuteSqlCommand("update ProxyEntity set CanUse=0 where CanUse!=0");
+                    new LogDomain().Add(new LogEntity { ErrorDetails = "EF 内存泄露，启动清扫策略。", TriggerTime = DateTime.Now });
+                    _db.Database.ExecuteSqlCommand("update ProxyEntity set CanUse=0 where CanUse!=0");
                 }
                 Console.WriteLine("移除失效代理:{0}:{1}", model.IpAddress, model.Port);
             }

@@ -8,22 +8,22 @@ namespace LiGather.DataPersistence.Domain
     public class CrawlerDomain
     {
         private static readonly object Obj = new object();
-        private static readonly LiGatherContext Db = new LiGatherContext();
+        private readonly LiGatherContext _db = new LiGatherContext();
 
-        public static void Add(CrawlerEntity model)
+        public void Add(CrawlerEntity model)
         {
             lock (Obj)
             {
-                Db.CrawlerEntities.Add(model);
-                Db.SaveChanges();
+                _db.CrawlerEntities.Add(model);
+                _db.SaveChanges();
             }
         }
 
-        public static IQueryable<CrawlerEntity> Get(Expression<Func<CrawlerEntity, bool>> expression)
+        public IQueryable<CrawlerEntity> Get(Expression<Func<CrawlerEntity, bool>> expression)
         {
             lock (Obj)
             {
-                return Db.CrawlerEntities.Where(expression);
+                return _db.CrawlerEntities.Where(expression);
             }
         }
     }

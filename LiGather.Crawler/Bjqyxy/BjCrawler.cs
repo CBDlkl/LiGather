@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using FSLib.Network.Http;
 using Ivony.Html;
 using Ivony.Html.Parser;
 using LiGather.DataPersistence.Domain;
 using LiGather.DataPersistence.Proxy;
-using LiGather.Model;
 using LiGather.Model.Domain;
 using LiGather.Model.Log;
 using LiGather.Model.WebDomain;
@@ -96,8 +93,7 @@ namespace LiGather.Crawler.Bjqyxy
         /// 爬虫逻辑
         /// </summary>
         /// <param name="taskNum">线程数</param>
-        /// <param name="model"></param>
-        public void CrawlerWork(int taskNum, TaskEntity model)
+        public void CrawlerWork(int taskNum = 4)
         {
             var tasks = new Task[taskNum];
             for (var i = 0; i < taskNum; i++)
@@ -107,8 +103,8 @@ namespace LiGather.Crawler.Bjqyxy
                 task.Start();
             }
             Task.WaitAll(tasks);
-            model.TaskStateDicId = 3;
-            new TaskDomain().Update(model);
+            TaskEntity.TaskStateDicId = 3;
+            new TaskDomain().Update(TaskEntity);
             Console.WriteLine("所有任务已经完成 {0}", DateTime.Now);
         }
 
@@ -119,14 +115,14 @@ namespace LiGather.Crawler.Bjqyxy
             var companyEntity = new TargeCompanyEntity();
             while (true)
             {
-                var targetModel = new CrawlerEntity { 操作人姓名 = TaskEntity.OperatorName, 入爬行库时间 = TaskEntity.CreateTime };
+                var targetModel = new CrawlerEntity { 操作人姓名 = TaskEntity.OperatorName, 入爬行库时间 = TaskEntity.CreateTime, TaskGuid = TaskEntity.Unique };
                 try
                 {
-                    Thread.Sleep(250);
+                    //Thread.Sleep(250);
                     //查询资源预处理
                     if (isReloadCompany)
                     {
-                        companyEntity = TargeCompanyDomain.GetSingel(QueryCondition);
+                        companyEntity = new TargeCompanyDomain().GetSingel(QueryCondition);
                         if (companyEntity == null)
                             break;
                         targetModel.搜索名称 = companyEntity.CompanyName; //搜索名称，直接持久化
@@ -139,7 +135,7 @@ namespace LiGather.Crawler.Bjqyxy
                     }
 
                     //IP处理
-                    var proxyEntity = ProxyDomain.GetByRandom(); //代理IP
+                    var proxyEntity = new ProxyDomain().GetByRandom(); //代理IP
                     if (proxyEntity == null)
                     {
                         Console.WriteLine("在线代理临时获取策略启动。");
@@ -204,18 +200,18 @@ namespace LiGather.Crawler.Bjqyxy
                             .ForEach(t => listall.Add(t.InnerText().TrimEnd(':').TrimEnd('：').Trim()));
                     var fillModel = FillModel(listall);
                     fillModel.全局唯一编号 = nameValueCollection["reg_bus_ent_id"];
-                    CrawlerDomain.Add(StrategyNo1(fillModel, targetModel));
+                    new CrawlerDomain().Add(StrategyNo1(fillModel, targetModel));
                     //后续其他处理 包括了IP使用状态，以查询列表状态
                     proxyEntity.Usage = proxyEntity.Usage + 1;
-                    ProxyDomain.Update(proxyEntity);
+                    new ProxyDomain().Update(proxyEntity);
                     Console.WriteLine("{0} 抓取到：{1}", Task.CurrentId, targetModel.搜索名称);
                 }
                 catch (Exception e)
                 {
                     companyEntity.IsSearched = true;
                     companyEntity.IsAbnormal = true;
-                    TargeCompanyDomain.Update(companyEntity);
-                    LogDomain.Add(new LogEntity { ErrorDetails = e.Message, TriggerTime = DateTime.Now });
+                    new TargeCompanyDomain().Update(companyEntity);
+                    new LogDomain().Add(new LogEntity { ErrorDetails = e.Message, TriggerTime = DateTime.Now });
                     AddNull(targetModel);
                 }
                 isReloadCompany = true;
@@ -227,7 +223,7 @@ namespace LiGather.Crawler.Bjqyxy
         /// </summary>
         private void AddNull(CrawlerEntity targetModel)
         {
-            CrawlerDomain.Add(targetModel);
+            new CrawlerDomain().Add(targetModel);
             Console.WriteLine("{0} 空对象：{1}", Task.CurrentId, targetModel.搜索名称);
         }
 
@@ -238,7 +234,7 @@ namespace LiGather.Crawler.Bjqyxy
         {
             model.CanUse = false;
             model.LastUseTime = DateTime.Now;
-            ProxyDomain.LockUpdate(model);
+            new ProxyDomain().LockUpdate(model);
         }
 
         private bool ValidText(string html)

@@ -45,7 +45,7 @@ namespace LiGather.Proxy
             if (!VerificationIp(model.IpAddress, model.Port)) return false;
             model.CanUse = true;
             model.LastUseTime = DateTime.Now;
-            ProxyDomain.Update(model);
+            new ProxyDomain().Update(model);
             Console.WriteLine("当前线程{0}更新了第{1}号，{2}可用情况",
                 Thread.CurrentThread.ManagedThreadId
                 , model.Id, model.IpAddress);

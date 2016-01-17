@@ -54,7 +54,7 @@ namespace LiGather.Web.Controllers
 
         public ActionResult CheckInsertMetadata(TaskEntity model)
         {
-            var insertNum = TargeCompanyDomain.GetInt(t => t.TaskGuid == model.Unique);
+            var insertNum = new TargeCompanyDomain().GetInt(t => t.TaskGuid == model.Unique);
             return Json(new { state = "doing", num = insertNum });
         }
 
@@ -64,7 +64,7 @@ namespace LiGather.Web.Controllers
             var bjqyxy = new Crawler.Bjqyxy.BjCrawler(model, t => t.TaskGuid.Equals(model.Unique));
             new Task(() =>
             {
-                bjqyxy.CrawlerWork(4, model);
+                bjqyxy.CrawlerWork();
             }).Start();
             return Json(new { state = "doing" });
         }
@@ -72,14 +72,14 @@ namespace LiGather.Web.Controllers
         public ActionResult CheckGoGather(TaskEntity model)
         {
             var searchNum =
-                TargeCompanyDomain.GetInt(
+                new TargeCompanyDomain().GetInt(
                     t => t.TaskGuid == model.Unique && t.IsSearched);
             return Json(new { state = "doing", num = searchNum });
         }
 
         public ActionResult Export(TaskEntity model, bool isOptimize)
         {
-            var crawlerlists = CrawlerDomain.Get(t => t.TaskGuid == model.Unique).ToList();
+            var crawlerlists = new CrawlerDomain().Get(t => t.TaskGuid == model.Unique).ToList();
             if (crawlerlists.Count < 1)
                 return Content("<script>alert('未找到内容');</script>");
             var bytes = crawlerlists.ListToExcel(isOptimize);

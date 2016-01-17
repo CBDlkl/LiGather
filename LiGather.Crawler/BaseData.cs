@@ -41,7 +41,7 @@ namespace LiGather.Crawler
                             if (lists.Count <= 0)
                                 break;
                             var companyName = lists.Last();
-                            TargeCompanyDomain.Add(new TargeCompanyEntity { TaskGuid = model.Unique, CompanyName = companyName, CreateTime = TimeStamp, IsSearched = false, OperatorName = operatorName });
+                            new TargeCompanyDomain().Add(new TargeCompanyEntity { TaskGuid = model.Unique, CompanyName = companyName, CreateTime = TimeStamp, IsSearched = false, OperatorName = operatorName });
                             Console.WriteLine("成功插入：{0} 线程 {1}", Task.CurrentId, companyName); //Thread.CurrentThread.ManagedThreadId
                             lists.Remove(companyName);
                         }

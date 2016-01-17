@@ -106,17 +106,18 @@ namespace LiGather.Proxy
                         model.Port = Conv.ToInt(ipAndPort[1]);
                         model.Usage = 0;
                         model.CreateTime = DateTime.Now;
+                        ProxyDomain proxyDomain = new ProxyDomain();
                         if (isValidate)
                         {
                             if (ThreadValidate.VerificationIp(model.IpAddress, model.Port))
                             {
-                                if (!ProxyDomain.IsExist(model))
-                                    ProxyDomain.Add(model);
+                                if (!proxyDomain.IsExist(model))
+                                    proxyDomain.Add(model);
                                 countNum--;
                             }
                         }
-                        if (!ProxyDomain.IsExist(model))
-                            ProxyDomain.Add(model);
+                        if (!proxyDomain.IsExist(model))
+                            proxyDomain.Add(model);
                         countNum--;
                     }
                 }
@@ -141,8 +142,9 @@ namespace LiGather.Proxy
             model.CanUse = true;
             model.CreateTime = DateTime.Now;
             model.LastUseTime = DateTime.Now;
-            if (!ProxyDomain.IsExist(model))
-                ProxyDomain.Add(model);
+            ProxyDomain proxyDomain = new ProxyDomain();
+            if (!proxyDomain.IsExist(model))
+                proxyDomain.Add(model);
             return model;
         }
 
@@ -160,8 +162,9 @@ namespace LiGather.Proxy
                 {
                     for (var j = 0; j < MaxValue; j++)
                     {
-                        var id = new Random().Next(1, ProxyDomain.GetMaxId());
-                        var proxyEntity = ProxyDomain.GetById(id);
+                        ProxyDomain proxyDomain = new ProxyDomain();
+                        var id = new Random().Next(1, proxyDomain.GetMaxId());
+                        var proxyEntity = proxyDomain.GetById(id);
                         if (proxyEntity.Id == 0)
                             continue;
                         if (ThreadValidate.Doit(proxyEntity))
