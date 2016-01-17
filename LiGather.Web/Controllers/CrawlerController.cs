@@ -84,7 +84,7 @@ namespace LiGather.Web.Controllers
                 return Content("<script>alert('未找到内容');</script>");
             var bytes = crawlerlists.ListToExcel(isOptimize);
             return File(bytes, "application/vnd.ms-excel",
-                "导出北京企业采集信息" + DateTime.Now.ToString("yyyy-M-d dddd") + ".xls");
+                "导出北京企业采集信息[" + DateTime.Now.ToString("yyyy-M-d dddd") + "].xls");
         }
     }
 }

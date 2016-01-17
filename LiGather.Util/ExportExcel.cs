@@ -35,16 +35,15 @@ namespace LiGather.Util
                 for (int index = 0; index < lists.Count; index++)
                 {
                     IRow newRow = paymentSheet.CreateRow(paymentRowIndex);
-
-                    //列宽自适应，只对英文和数字有效
-                    if (isOptimize)
-                        paymentSheet.AutoSizeColumn(index);
                     //循环添加列的对应内容
                     for (int i = 0; i < propertys.Length; i++)
                     {
                         var obj = propertys[i].GetValue(lists[index], null);
                         newRow.CreateCell(i).SetCellValue((obj ?? "").ToString());
                     }
+                    //列宽自适应，只对英文和数字有效
+                    if (isOptimize)
+                        paymentSheet.AutoSizeColumn(index);
                     paymentRowIndex++;
                 }
 
