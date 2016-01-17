@@ -32,23 +32,22 @@ namespace LiGather.Util
                     paymentHeaderRow.CreateCell(i).SetCellValue(propertys[i].Name);
                 // 内容
                 int paymentRowIndex = 1;
-                foreach (var each in lists)
+                for (int index = 0; index < lists.Count; index++)
                 {
                     IRow newRow = paymentSheet.CreateRow(paymentRowIndex);
+
+                    //列宽自适应，只对英文和数字有效
+                    if (isOptimize)
+                        paymentSheet.AutoSizeColumn(index);
                     //循环添加列的对应内容
-                    for (int i = 0; i < propertys.Count(); i++)
+                    for (int i = 0; i < propertys.Length; i++)
                     {
-                        var obj = propertys[i].GetValue(each, null);
+                        var obj = propertys[i].GetValue(lists[index], null);
                         newRow.CreateCell(i).SetCellValue((obj ?? "").ToString());
                     }
                     paymentRowIndex++;
                 }
-                //列宽自适应，只对英文和数字有效
-                if (isOptimize)
-                {
-                    for (int i = 0; i <= lists.Count; i++)
-                        paymentSheet.AutoSizeColumn(i);
-                }
+
                 //将表内容写入流 等待下一步操作
                 workbook.Write(ms);
                 return ms.ToArray();
