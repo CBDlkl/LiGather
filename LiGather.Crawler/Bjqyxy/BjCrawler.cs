@@ -76,7 +76,7 @@ namespace LiGather.Crawler.Bjqyxy
 
         /// <summary>
         /// 北京企业信用信息网 爬虫
-        /// 维护时间：2016年1月14日 09:57:04
+        /// 维护时间：2016年1月18日 15:47:02
         /// </summary>
         /// <param name="model"></param>
         /// <param name="queryCondition">企业名单检索条件</param>
@@ -95,17 +95,24 @@ namespace LiGather.Crawler.Bjqyxy
         /// <param name="taskNum">线程数</param>
         public void CrawlerWork(int taskNum = 4)
         {
-            var tasks = new Task[taskNum];
-            for (var i = 0; i < taskNum; i++)
+            try
             {
-                var task = new Task(BaseWork);
-                tasks[i] = task;
-                task.Start();
+                var tasks = new Task[taskNum];
+                for (var i = 0; i < taskNum; i++)
+                {
+                    var task = new Task(BaseWork);
+                    tasks[i] = task;
+                    task.Start();
+                }
+                Task.WaitAll(tasks);
+                TaskEntity.TaskStateDicId = 3;
+                new TaskDomain().Update(TaskEntity);
+                Console.WriteLine("所有任务已经完成 {0}", DateTime.Now);
             }
-            Task.WaitAll(tasks);
-            TaskEntity.TaskStateDicId = 3;
-            new TaskDomain().Update(TaskEntity);
-            Console.WriteLine("所有任务已经完成 {0}", DateTime.Now);
+            catch (Exception e)
+            {
+                new LogDomain().Add(new LogEntity { ErrorDetails = "线程死亡："+e.Message, TriggerTime = DateTime.Now });
+            }
         }
 
         private void BaseWork()
@@ -190,7 +197,6 @@ namespace LiGather.Crawler.Bjqyxy
                         RemoveOldIp(proxyEntity);
                         continue;
                     }
-
                     //正文处理
                     var sorceIhtml = new JumonyParser().Parse(resultsecondBody.Result.Replace("<th", "<td"));
                     var tableLists = sorceIhtml.Find("table[class='f-lbiao']").ToList();
@@ -199,7 +205,7 @@ namespace LiGather.Crawler.Bjqyxy
                         tableList.Find("tr td")
                             .ForEach(t => listall.Add(t.InnerText().TrimEnd(':').TrimEnd('：').Trim()));
                     var fillModel = FillModel(listall);
-                    fillModel.全局唯一编号 = nameValueCollection["reg_bus_ent_id"];
+                    fillModel.全局唯一编号 = nameValueCollection["reg_bus_ent_id"].ToUpper();
                     new CrawlerDomain().Add(StrategyNo1(fillModel, targetModel));
                     //后续其他处理 包括了IP使用状态，以查询列表状态
                     proxyEntity.Usage = proxyEntity.Usage + 1;
@@ -239,7 +245,7 @@ namespace LiGather.Crawler.Bjqyxy
 
         private bool ValidText(string html)
         {
-            return html.Contains("访问");
+            return html.Contains("访问") || string.IsNullOrWhiteSpace(html);
         }
 
         /// <summary>
@@ -257,10 +263,11 @@ namespace LiGather.Crawler.Bjqyxy
                 var index = scoreList.FindIndex(c => c.Equals(name));
                 if (index < 0)
                     continue;
-                if (item.PropertyType == typeof(DateTime?))
-                    item.SetValue(model, Conv.ToDateOrNull(scoreList[index + 1]), null);
-                else
-                    item.SetValue(model, scoreList[index + 1], null);
+                item.SetValue(model, scoreList[index + 1], null);
+                //if (item.PropertyType == typeof(DateTime?))
+                //    item.SetValue(model, Conv.ToDateOrNull(scoreList[index + 1]), null);
+                //else
+                //    item.SetValue(model, scoreList[index + 1], null);
             }
             return model;
         }
@@ -274,10 +281,30 @@ namespace LiGather.Crawler.Bjqyxy
         private CrawlerEntity StrategyNo1(CrawlerEntity fillModel, CrawlerEntity appendEntity)
         {
             fillModel.搜索名称 = appendEntity.搜索名称;
+            fillModel.TaskGuid = appendEntity.TaskGuid;
             fillModel.操作人姓名 = appendEntity.操作人姓名;
             fillModel.名称 = string.IsNullOrWhiteSpace(fillModel.名称) ? appendEntity.名称 : fillModel.名称;
             fillModel.入爬行库时间 = appendEntity.入爬行库时间;
             fillModel.爬行更新时间 = DateTime.Now;
+
+            if (!string.IsNullOrWhiteSpace(fillModel.注册资本))
+            {
+                var split = fillModel.注册资本?.Split(' ');
+                if (split.Length > 0)
+                {
+                    fillModel.注册资本 = split[0].Trim();
+                    fillModel.实收资本 = fillModel.实收资本?.Split(' ')[0];
+                    fillModel.实缴出资金额 = fillModel.实缴出资金额?.Split(' ')[0];
+                }
+                if (split.Length > 1)
+                {
+                    fillModel.资金单位 = split[1].Trim();
+                }
+                if (split.Length > 2)
+                {
+                    fillModel.币种 = split[2].Trim();
+                }
+            }
             return fillModel;
         }
     }

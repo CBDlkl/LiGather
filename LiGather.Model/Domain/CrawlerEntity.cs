@@ -22,12 +22,12 @@ namespace LiGather.Model.Domain
         public string 法定代表人 { set; get; }
         public string 营业场所 { get; set; }
         public string 住所 { set; get; }
-        public DateTime? 营业期限自 { get; set; }
-        public DateTime? 营业期限至 { get; set; }
+        public string 营业期限自 { get; set; }
+        public string 营业期限至 { get; set; }
         public string 经营范围 { get; set; }
         public string 登记机关 { get; set; }
-        public DateTime? 核准日期 { get; set; }
-        public DateTime? 成立日期 { get; set; }
+        public string 核准日期 { get; set; }
+        public string 成立日期 { get; set; }
         public string 登记状态 { get; set; }
 
         public string 纳税人名称 { get; set; }
@@ -45,7 +45,7 @@ namespace LiGather.Model.Domain
         public string 登记注册类型 { get; set; }
         public string 隶属关系 { get; set; }
         public string 国家标准行业 { get; set; }
-        public DateTime? 税务登记日期 { get; set; }
+        public string 税务登记日期 { get; set; }
         public string 主管税务机关 { get; set; }
         public string 纳税人状态 { get; set; }
 
@@ -53,8 +53,10 @@ namespace LiGather.Model.Domain
         public string 注册资本 { get; set; }
         public string 实收资本 { get; set; }
         public string 实缴出资金额 { get; set; }
-        public DateTime? 最终实缴出资时间 { get; set; }
-        public DateTime? 最终认缴出资时间 { get; set; }
+        public string 资金单位 { get; set; }
+        public string 币种 { get; set; }
+        public string 最终实缴出资时间 { get; set; }
+        public string 最终认缴出资时间 { get; set; }
 
         #endregion
 
