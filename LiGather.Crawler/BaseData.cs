@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using LiGather.DataPersistence.Domain;
 using LiGather.Model;
@@ -50,6 +51,7 @@ namespace LiGather.Crawler
                 task.Start();
                 tasks[i] = task;
             }
+            Thread.Sleep(5 * 1000);
             Task.WaitAll(tasks);
             //更新任务状态
             model.TaskStateDicId = 2;

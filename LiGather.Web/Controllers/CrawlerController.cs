@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -79,7 +80,7 @@ namespace LiGather.Web.Controllers
 
         public ActionResult Export(TaskEntity model, bool isOptimize)
         {
-            var crawlerlists = new CrawlerDomain().Get(t => t.TaskGuid == model.Unique).OrderByDescending(t=>t.爬行更新时间).ToList();
+            var crawlerlists = new CrawlerDomain().Get(t => t.TaskGuid == model.Unique).OrderByDescending(t => t.爬行更新时间).ToList();
             if (crawlerlists.Count < 1)
                 return Content("<script>alert('未找到内容');</script>");
             var bytes = crawlerlists.ListToExcel(isOptimize);

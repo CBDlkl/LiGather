@@ -9,18 +9,12 @@ namespace LiGather.DataPersistence.Domain
 {
     public class TargeCompanyDomain
     {
-        private static readonly object Obj = new object();
-        private readonly LiGatherContext _db = new LiGatherContext();
-
         public void Add(TargeCompanyEntity model)
         {
-            lock (Obj)
+            using (LiGatherContext _db = new LiGatherContext())
             {
-                using (_db)
-                {
-                    _db.TrCompanyEntities.AddOrUpdate(model);
-                    _db.SaveChanges();
-                }
+                _db.TrCompanyEntities.AddOrUpdate(model);
+                _db.SaveChanges();
             }
         }
 
@@ -31,7 +25,7 @@ namespace LiGather.DataPersistence.Domain
         /// <returns></returns>
         public int GetInt(Expression<Func<TargeCompanyEntity, bool>> where)
         {
-            lock (Obj)
+            using (LiGatherContext _db = new LiGatherContext())
             {
                 return _db.TrCompanyEntities.Count(where);
             }
@@ -43,7 +37,7 @@ namespace LiGather.DataPersistence.Domain
         /// <returns></returns>
         public TargeCompanyEntity GetSingel(Expression<Func<TargeCompanyEntity, bool>> where)
         {
-            lock (Obj)
+            using (LiGatherContext _db = new LiGatherContext())
             {
                 var model = _db.TrCompanyEntities.Where(where).FirstOrDefault(t => t.IsAbnormal == false && t.IsSearched == false);
                 if (model != null)
@@ -57,7 +51,7 @@ namespace LiGather.DataPersistence.Domain
 
         public void Update(TargeCompanyEntity model)
         {
-            lock (Obj)
+            using (LiGatherContext _db = new LiGatherContext())
             {
                 _db.TrCompanyEntities.AddOrUpdate(model);
                 _db.SaveChanges();

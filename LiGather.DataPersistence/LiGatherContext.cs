@@ -1,6 +1,5 @@
 ﻿using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
-using LiGather.Model;
 using LiGather.Model.Domain;
 using LiGather.Model.Log;
 using LiGather.Model.WebDomain;

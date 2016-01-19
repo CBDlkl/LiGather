@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using LiGather.Model.Domain;
@@ -7,24 +8,22 @@ namespace LiGather.DataPersistence.Domain
 {
     public class CrawlerDomain
     {
-        private static readonly object Obj = new object();
-        private readonly LiGatherContext _db = new LiGatherContext();
-
         public void Add(CrawlerEntity model)
         {
-            lock (Obj)
+            using (LiGatherContext db = new LiGatherContext())
             {
-                _db.CrawlerEntities.Add(model);
-                _db.SaveChanges();
+                db.CrawlerEntities.Add(model);
+                db.SaveChanges();
             }
         }
 
-        public IQueryable<CrawlerEntity> Get(Expression<Func<CrawlerEntity, bool>> expression)
+        public List<CrawlerEntity> Get(Expression<Func<CrawlerEntity, bool>> expression)
         {
-            lock (Obj)
+            using (LiGatherContext db = new LiGatherContext())
             {
-                return _db.CrawlerEntities.Where(expression);
+                return db.CrawlerEntities.Where(expression).ToList();
             }
         }
+
     }
 }

@@ -66,10 +66,12 @@
             var options = {
                 success: function (data) {
                     layer.close(index);
-                    parent.layer.alert(data.msg, function (d) {
+                    parent.layer.msg(data.msg, {
+                        icon: 1,
+                        shade: 0.5,
+                        time: 2000
+                    }, function () {
                         window.parent.location.reload();
-                        //parent.layer.close(d);
-                        //parent.layer.close(parent.layer.getFrameIndex(window.name));
                     });
                 }
             };

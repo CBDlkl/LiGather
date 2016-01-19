@@ -9,12 +9,9 @@ namespace LiGather.DataPersistence.Domain
 {
     public class TaskStateDicDomain
     {
-        private readonly LiGatherContext _db = new LiGatherContext();
-        private readonly object _obj = new object();
-
         public TaskStateDic Get(Expression<Func<TaskStateDic, bool>> expression)
         {
-            lock (_obj)
+            using (LiGatherContext _db = new LiGatherContext())
             {
                 return _db.TaskStateDics.SingleOrDefault(expression);
             }

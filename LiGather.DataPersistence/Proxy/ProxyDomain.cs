@@ -12,18 +12,18 @@ namespace LiGather.DataPersistence.Proxy
     /// </summary>
     public class ProxyDomain
     {
-        private static readonly object Obj = new object();
-        private readonly LiGatherContext _db = new LiGatherContext();
 
         public bool IsExist(ProxyEntity model)
         {
-            lock (Obj)
+            using (LiGatherContext _db = new LiGatherContext())
+            {
                 return _db.ProxyEntities.Any(t => t.IpAddress == model.IpAddress);
+            }
         }
 
         public ProxyEntity GetById(int id)
         {
-            lock (Obj)
+            using (LiGatherContext _db = new LiGatherContext())
             {
                 return _db.ProxyEntities.OrderBy(t => t.LastUseTime).SingleOrDefault(t => t.Id == id);
             }
@@ -31,7 +31,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public ProxyEntity GetByRandom()
         {
-            lock (Obj)
+            using (LiGatherContext _db = new LiGatherContext())
             {
                 //随机取
                 //var idLists = _db.ProxyEntities.Where(t => t.CanUse == true).Select(t => t.Id).ToList();
@@ -42,15 +42,15 @@ namespace LiGather.DataPersistence.Proxy
 
         public int GetMaxId()
         {
-            lock (Obj)
-            {
-                return _db.ProxyEntities.Max(t => t.Id);
-            }
+            using (LiGatherContext _db = new LiGatherContext())
+                {
+                    return _db.ProxyEntities.Max(t => t.Id);
+                }
         }
 
         public ProxyEntity Get(ProxyEntity model)
         {
-            lock (Obj)
+            using (LiGatherContext _db = new LiGatherContext())
             {
                 return _db.ProxyEntities.SingleOrDefault(t => t.Id == model.Id);
             }
@@ -58,7 +58,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public void Add(ProxyEntity model)
         {
-            lock (Obj)
+            using (LiGatherContext _db = new LiGatherContext())
             {
                 _db.ProxyEntities.Add(model);
                 _db.SaveChanges();
@@ -67,7 +67,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public void Update(ProxyEntity model)
         {
-            lock (Obj)
+            using (LiGatherContext _db = new LiGatherContext())
             {
                 _db.ProxyEntities.AddOrUpdate(model);
                 _db.SaveChanges();
@@ -76,7 +76,7 @@ namespace LiGather.DataPersistence.Proxy
 
         public void LockUpdate(ProxyEntity model)
         {
-            lock (Obj)
+            using (LiGatherContext _db = new LiGatherContext())
             {
                 var proxyEntity = _db.ProxyEntities.Where(t => t.Id == model.Id && t.CanUse == true).ToList();
                 if (!proxyEntity.Any()) return;
