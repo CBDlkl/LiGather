@@ -52,7 +52,6 @@ namespace LiGather.Crawler
                 tasks[i] = task;
             }
             Task.WaitAll(tasks);
-            Thread.Sleep(5 * 1000);
             //更新任务状态
             model.TaskStateDicId = 2;
             new TaskDomain().Update(model);

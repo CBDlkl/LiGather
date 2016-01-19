@@ -101,11 +101,12 @@ namespace LiGather.Crawler.Bjqyxy
                 Task.WaitAll(tasks);
                 TaskEntity.TaskStateDicId = 3;
                 new TaskDomain().Update(TaskEntity);
+                new LogDomain().Add(new LogEntity { LogType = "success", TaskName = TaskEntity.TaskName, TriggerTime = DateTime.Now });
                 Console.WriteLine("所有任务已经完成 {0}", DateTime.Now);
             }
             catch (Exception e)
             {
-                new LogDomain().Add(new LogEntity { TaskName = TaskEntity.TaskName, ErrorDetails = "线程死亡：" + e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
+                new LogDomain().Add(new LogEntity { LogType = "error", TaskName = TaskEntity.TaskName, ErrorDetails = "线程死亡：" + e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
             }
         }
 
@@ -114,7 +115,7 @@ namespace LiGather.Crawler.Bjqyxy
             bool isReloadCompany = true; //是否重新获取新的企业名称
             string companyOld = "";
             var companyEntity = new TargeCompanyEntity();
-            var httpClient = new HttpClient(); //HTTP访问对象
+            var httpClient = new HttpClient();
             httpClient.Setting.Timeout = 1000 * 5;
             var cookieContext = httpClient.Create<string>(HttpMethod.Post, firsturl).Send();
             while (true)
@@ -220,7 +221,7 @@ namespace LiGather.Crawler.Bjqyxy
                     companyEntity.IsSearched = true;
                     companyEntity.IsAbnormal = true;
                     new TargeCompanyDomain().Update(companyEntity);
-                    new LogDomain().Add(new LogEntity { TaskName = TaskEntity.TaskName, ErrorDetails = e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
+                    new LogDomain().Add(new LogEntity { LogType = "error", TaskName = TaskEntity.TaskName, ErrorDetails = e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
                     AddNull(targetModel);
                 }
                 isReloadCompany = true;

@@ -61,12 +61,10 @@ namespace LiGather.Web.Controllers
 
         public ActionResult GoGather(TaskEntity model)
         {
+            Thread.Sleep(1000 * 3); //默认等待三秒
             //抓取数据
             var bjqyxy = new Crawler.Bjqyxy.BjCrawler(model, t => t.TaskGuid.Equals(model.Unique));
-            new Task(() =>
-            {
-                bjqyxy.CrawlerWork();
-            }).Start();
+            new Task(() => { bjqyxy.CrawlerWork(); }).Start();
             return Json(new { state = "doing" });
         }
 
