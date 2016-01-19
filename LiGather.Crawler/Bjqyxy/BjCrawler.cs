@@ -111,7 +111,7 @@ namespace LiGather.Crawler.Bjqyxy
             }
             catch (Exception e)
             {
-                new LogDomain().Add(new LogEntity { ErrorDetails = "线程死亡："+e.Message, TriggerTime = DateTime.Now });
+                new LogDomain().Add(new LogEntity { ErrorDetails = "线程死亡：" + e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
             }
         }
 
@@ -217,7 +217,7 @@ namespace LiGather.Crawler.Bjqyxy
                     companyEntity.IsSearched = true;
                     companyEntity.IsAbnormal = true;
                     new TargeCompanyDomain().Update(companyEntity);
-                    new LogDomain().Add(new LogEntity { ErrorDetails = e.Message, TriggerTime = DateTime.Now });
+                    new LogDomain().Add(new LogEntity { ErrorDetails = e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
                     AddNull(targetModel);
                 }
                 isReloadCompany = true;
