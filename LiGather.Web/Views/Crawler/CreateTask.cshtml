@@ -62,6 +62,34 @@
     <script src="~/Scripts/jquery.form.js"></script>
     <script type="text/javascript">
         $("#butsubmit").click(function () {
+            var $TaskName = $("input#TaskName");
+            var $OperatorName = $("input#OperatorName");
+            var $txtfile = $("input#txtfile");
+            if ($TaskName.val() == '') {
+                parent.layer.msg("任务名称不能为空！", {
+                    icon: 0,
+                    shade: 0.5, shadeClose:true,
+                    time: 2000
+                });
+                return;
+            }
+            if ($OperatorName.val() == '') {
+                parent.layer.msg("操作执行人不能为空！", {
+                    icon: 0,
+                    shade: 0.5, shadeClose: true,
+                    time: 2000
+                });
+                return;
+            }
+            if ($txtfile.val() == '') {
+                parent.layer.msg("请选择任务目录！", {
+                    icon: 0,
+                    shade: 0.5, shadeClose: true,
+                    time: 2000
+                });
+                return;
+            }
+
             var index = layer.load();
             var options = {
                 success: function (data) {

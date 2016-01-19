@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using FSLib.Network.Http;
 using Ivony.Html;
@@ -69,10 +70,6 @@ namespace LiGather.Crawler.Bjqyxy
         /// 企业名单检索条件
         /// </summary>
         private Expression<Func<TargeCompanyEntity, bool>> QueryCondition { set; get; }
-        /// <summary>
-        /// HTTP访问对象
-        /// </summary>
-        private readonly HttpClient _client;
 
         /// <summary>
         /// 北京企业信用信息网 爬虫
@@ -84,9 +81,6 @@ namespace LiGather.Crawler.Bjqyxy
         {
             TaskEntity = model;
             QueryCondition = queryCondition;
-            _client = new HttpClient();
-            _client.Setting.Timeout = 1000 * 5;
-            _client.Create<string>(HttpMethod.Post, firsturl).Send();
         }
 
         /// <summary>
@@ -101,8 +95,8 @@ namespace LiGather.Crawler.Bjqyxy
                 for (var i = 0; i < taskNum; i++)
                 {
                     var task = new Task(BaseWork);
-                    tasks[i] = task;
                     task.Start();
+                    tasks[i] = task;
                 }
                 Task.WaitAll(tasks);
                 TaskEntity.TaskStateDicId = 3;
@@ -111,7 +105,7 @@ namespace LiGather.Crawler.Bjqyxy
             }
             catch (Exception e)
             {
-                new LogDomain().Add(new LogEntity { ErrorDetails = "线程死亡：" + e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
+                new LogDomain().Add(new LogEntity { TaskName = TaskEntity.TaskName, ErrorDetails = "线程死亡：" + e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
             }
         }
 
@@ -120,8 +114,17 @@ namespace LiGather.Crawler.Bjqyxy
             bool isReloadCompany = true; //是否重新获取新的企业名称
             string companyOld = "";
             var companyEntity = new TargeCompanyEntity();
+            var httpClient = new HttpClient(); //HTTP访问对象
+            httpClient.Setting.Timeout = 1000 * 5;
+            var cookieContext = httpClient.Create<string>(HttpMethod.Post, firsturl).Send();
             while (true)
             {
+                if (!cookieContext.IsValid())
+                {
+                    Thread.Sleep(1000 * 5);
+                    continue;
+                }
+
                 var targetModel = new CrawlerEntity { 操作人姓名 = TaskEntity.OperatorName, 入爬行库时间 = TaskEntity.CreateTime, TaskGuid = TaskEntity.Unique };
                 try
                 {
@@ -150,8 +153,8 @@ namespace LiGather.Crawler.Bjqyxy
                         Console.WriteLine("线上获取到了代理：{0}:{1}", proxyEntity.IpAddress, proxyEntity.Port);
                     }
 
-                    _client.Setting.Proxy = new WebProxy(proxyEntity.IpAddress, proxyEntity.Port);
-                    var resultBody = _client.Create<string>(HttpMethod.Post, targetUrl, data: new
+                    httpClient.Setting.Proxy = new WebProxy(proxyEntity.IpAddress, proxyEntity.Port);
+                    var resultBody = httpClient.Create<string>(HttpMethod.Post, targetUrl, data: new
                     {
                         queryStr = targetModel.搜索名称,
                         module = "",
@@ -184,7 +187,7 @@ namespace LiGather.Crawler.Bjqyxy
                     }
                     //提取目标正文
                     var resultsecondBody =
-                        _client.Create<string>(HttpMethod.Get, zhuUrl + new Uri(firsturl + nextUrl).Query).Send();
+                        httpClient.Create<string>(HttpMethod.Get, zhuUrl + new Uri(firsturl + nextUrl).Query).Send();
                     var nameValueCollection =
                         new NameValueCollection(URL.GetQueryString(new Uri(firsturl + nextUrl).Query));
                     if (!resultsecondBody.IsValid())
@@ -217,7 +220,7 @@ namespace LiGather.Crawler.Bjqyxy
                     companyEntity.IsSearched = true;
                     companyEntity.IsAbnormal = true;
                     new TargeCompanyDomain().Update(companyEntity);
-                    new LogDomain().Add(new LogEntity { ErrorDetails = e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
+                    new LogDomain().Add(new LogEntity { TaskName = TaskEntity.TaskName, ErrorDetails = e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
                     AddNull(targetModel);
                 }
                 isReloadCompany = true;

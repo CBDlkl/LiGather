@@ -9,9 +9,11 @@ namespace LiGather.DataPersistence.Domain
 {
     public class TargeCompanyDomain
     {
+        private readonly LiGatherContext _db = new LiGatherContext();
+        private readonly object _obj = new object();
         public void Add(TargeCompanyEntity model)
         {
-            using (LiGatherContext _db = new LiGatherContext())
+            lock (_obj)
             {
                 _db.TrCompanyEntities.AddOrUpdate(model);
                 _db.SaveChanges();

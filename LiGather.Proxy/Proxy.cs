@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FSLib.Network.Http;
@@ -98,9 +96,9 @@ namespace LiGather.Proxy
                     foreach (var ipList in ipLists)
                     {
                         var ipAndPort = ipList.Split(':');
-                        if (string.IsNullOrWhiteSpace(ipList) || ipAndPort.Length<2)
+                        if (string.IsNullOrWhiteSpace(ipList) || ipAndPort.Length < 2)
                             continue;
-                        Console.WriteLine("获取到代理："+ ipList);
+                        Console.WriteLine("获取到代理：" + ipList);
                         var model = new ProxyEntity();
                         model.IpAddress = ipAndPort[0];
                         model.Port = Conv.ToInt(ipAndPort[1]);
@@ -154,7 +152,6 @@ namespace LiGather.Proxy
         /// <param name="maxThreadNum">启用多少线程验证</param>
         public void ValidateCanUse(int maxThreadNum = 1)
         {
-            
             var tasks = new Task[maxThreadNum];
             for (var i = 0; i < maxThreadNum; i++)
             {
@@ -174,10 +171,7 @@ namespace LiGather.Proxy
                 });
                 tasks[i].Start();
             }
-            Console.WriteLine("主线程等待");
             Task.WaitAll(tasks);
-            Console.WriteLine("执行完成");
-            Console.ReadKey();
         }
 
     }

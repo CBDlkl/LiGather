@@ -43,7 +43,7 @@ namespace LiGather.Crawler
                                 break;
                             var companyName = lists.Last();
                             new TargeCompanyDomain().Add(new TargeCompanyEntity { TaskGuid = model.Unique, CompanyName = companyName, CreateTime = TimeStamp, IsSearched = false, OperatorName = operatorName });
-                            Console.WriteLine("成功插入：{0} 线程 {1}", Task.CurrentId, companyName); //Thread.CurrentThread.ManagedThreadId
+                            Console.WriteLine("成功插入：{0} 线程 {1}", Task.CurrentId, companyName);
                             lists.Remove(companyName);
                         }
                     }

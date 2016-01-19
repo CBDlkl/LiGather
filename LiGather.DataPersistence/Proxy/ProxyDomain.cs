@@ -31,21 +31,21 @@ namespace LiGather.DataPersistence.Proxy
 
         public ProxyEntity GetByRandom()
         {
-            using (LiGatherContext _db = new LiGatherContext())
+            using (LiGatherContext db = new LiGatherContext())
             {
                 //随机取
                 //var idLists = _db.ProxyEntities.Where(t => t.CanUse == true).Select(t => t.Id).ToList();
                 //var id = new Random().Next(0, idLists.Count);
-                return _db.ProxyEntities.Where(t => t.CanUse.Value).OrderByDescending(t => t.LastUseTime).FirstOrDefault();
+                return db.ProxyEntities.Where(t => t.CanUse.Value).OrderByDescending(t => t.LastUseTime).FirstOrDefault();
             }
         }
 
         public int GetMaxId()
         {
             using (LiGatherContext _db = new LiGatherContext())
-                {
-                    return _db.ProxyEntities.Max(t => t.Id);
-                }
+            {
+                return _db.ProxyEntities.Max(t => t.Id);
+            }
         }
 
         public ProxyEntity Get(ProxyEntity model)
