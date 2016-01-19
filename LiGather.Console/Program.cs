@@ -33,11 +33,14 @@ namespace LiGather.Console
 
             //待查数据初始化
             var lists = File.ReadAllLines("E:/1.txt", Encoding.Default).ToList();
-            new BaseData(TimeStamp).InsertMetadata(lists, OperatorName, model);
+            new BaseData(model).InsertMetadata(lists, OperatorName, model, taskEntity =>
+            {
+                //抓取数据
+                var bjqyxy = new Crawler.Bjqyxy.BjCrawler(taskEntity, t => t.TaskGuid.Equals(taskEntity.Unique));
+                bjqyxy.CrawlerWork();
+            });
 
-            //抓取数据
-            var bjqyxy = new Crawler.Bjqyxy.BjCrawler(model, t => t.TaskGuid.Equals(model.Unique));
-            bjqyxy.CrawlerWork();
+
 
             sw.Stop();
             TimeSpan ts2 = sw.Elapsed;

@@ -117,15 +117,9 @@ namespace LiGather.Crawler.Bjqyxy
             var companyEntity = new TargeCompanyEntity();
             var httpClient = new HttpClient();
             httpClient.Setting.Timeout = 1000 * 5;
-            var cookieContext = httpClient.Create<string>(HttpMethod.Post, firsturl).Send();
+            httpClient.Create<string>(HttpMethod.Post, firsturl).Send();
             while (true)
             {
-                if (!cookieContext.IsValid())
-                {
-                    Thread.Sleep(1000 * 5);
-                    continue;
-                }
-
                 var targetModel = new CrawlerEntity { 操作人姓名 = TaskEntity.OperatorName, 入爬行库时间 = TaskEntity.CreateTime, TaskGuid = TaskEntity.Unique };
                 try
                 {
@@ -154,7 +148,24 @@ namespace LiGather.Crawler.Bjqyxy
                         Console.WriteLine("线上获取到了代理：{0}:{1}", proxyEntity.IpAddress, proxyEntity.Port);
                     }
 
+                    new LogDomain().Add(new LogEntity
+                    {
+                        Details = $"{Task.CurrentId} IP代理准备挂载：{proxyEntity.IpAddress}",
+                        TriggerTime = DateTime.Now,
+                        TaskName = TaskEntity.TaskName,
+                        LogType = "info"
+                    });
+
                     httpClient.Setting.Proxy = new WebProxy(proxyEntity.IpAddress, proxyEntity.Port);
+
+                    new LogDomain().Add(new LogEntity
+                    {
+                        Details = $"{Task.CurrentId} IP代理挂载完成",
+                        TriggerTime = DateTime.Now,
+                        TaskName = TaskEntity.TaskName,
+                        LogType = "info"
+                    });
+
                     var resultBody = httpClient.Create<string>(HttpMethod.Post, targetUrl, data: new
                     {
                         queryStr = targetModel.搜索名称,

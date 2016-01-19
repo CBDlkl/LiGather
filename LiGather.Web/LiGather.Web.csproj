@@ -141,6 +141,7 @@
     <Content Include="Content\bootstrap\fonts\glyphicons-halflings-regular.woff" />
     <Content Include="Content\bootstrap\fonts\glyphicons-halflings-regular.woff2" />
     <Content Include="Views\Crawler\CreateTask.cshtml" />
+    <None Include="Properties\PublishProfiles\发布到web.pubxml" />
     <None Include="Properties\PublishProfiles\文件系统.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

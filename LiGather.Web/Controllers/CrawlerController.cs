@@ -10,6 +10,7 @@ using System.Web.Mvc;
 using LiGather.Model.WebDomain;
 using LiGather.Crawler;
 using LiGather.DataPersistence.Domain;
+using LiGather.Model.Log;
 using LiGather.Util;
 
 namespace LiGather.Web.Controllers
@@ -48,7 +49,11 @@ namespace LiGather.Web.Controllers
             new TaskDomain().Add(model);
             new Task(() =>
             {
-                new BaseData(model.CreateTime).InsertMetadata(companyList.ToList(), model.TaskName, model);
+                new BaseData(model).InsertMetadata(companyList.ToList(), model.TaskName, model, taskEntity =>
+                {
+                    var bjqyxy = new Crawler.Bjqyxy.BjCrawler(taskEntity, t => t.TaskGuid.Equals(taskEntity.Unique));
+                    new Task(() => { bjqyxy.CrawlerWork(); }).Start();
+                });
             }).Start();
             return Json(new { msg = $"成功上传了任务文件，系统接受到{companyList.Count}条记录，正在导入系统中。。。" });
         }
@@ -61,11 +66,11 @@ namespace LiGather.Web.Controllers
 
         public ActionResult GoGather(TaskEntity model)
         {
-            Thread.Sleep(1000 * 3); //默认等待三秒
-            //抓取数据
-            var bjqyxy = new Crawler.Bjqyxy.BjCrawler(model, t => t.TaskGuid.Equals(model.Unique));
-            new Task(() => { bjqyxy.CrawlerWork(); }).Start();
-            return Json(new { state = "doing" });
+            //Thread.Sleep(1000 * 3); //默认等待三秒
+            ////抓取数据
+            //var bjqyxy = new Crawler.Bjqyxy.BjCrawler(model, t => t.TaskGuid.Equals(model.Unique));
+            //new Task(() => { bjqyxy.CrawlerWork(); }).Start();
+            return Json(new { state = "nothion" });
         }
 
         public ActionResult CheckGoGather(TaskEntity model)

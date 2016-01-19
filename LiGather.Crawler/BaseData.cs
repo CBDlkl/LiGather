@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using LiGather.DataPersistence.Domain;
-using LiGather.Model;
 using LiGather.Model.Domain;
 using LiGather.Model.WebDomain;
 
@@ -12,14 +10,15 @@ namespace LiGather.Crawler
 {
     public class BaseData
     {
-        private DateTime TimeStamp { get; }
+        private TaskEntity TaskEntity { get; }
+
         /// <summary>
         /// 基础数据操作
         /// </summary>
-        /// <param name="timeStamp"></param>
-        public BaseData(DateTime timeStamp)
+        /// <param name="taskEntity"></param>
+        public BaseData(TaskEntity taskEntity)
         {
-            TimeStamp = timeStamp;
+            this.TaskEntity = taskEntity;
         }
 
         /// <summary>
@@ -28,7 +27,8 @@ namespace LiGather.Crawler
         /// <param name="lists"></param>
         /// <param name="operatorName">操作员</param>
         /// <param name="model">任务模型</param>
-        public void InsertMetadata(List<string> lists, string operatorName, TaskEntity model)
+        /// <param name="action">导入完成后执行的内容</param>
+        public void InsertMetadata(List<string> lists, string operatorName, TaskEntity model, Action<TaskEntity> action)
         {
             var tasks = new Task[3];
             for (var i = 0; i < 3; i++)
@@ -42,7 +42,7 @@ namespace LiGather.Crawler
                             if (lists.Count <= 0)
                                 break;
                             var companyName = lists.Last();
-                            new TargeCompanyDomain().Add(new TargeCompanyEntity { TaskGuid = model.Unique, CompanyName = companyName, CreateTime = TimeStamp, IsSearched = false, OperatorName = operatorName });
+                            new TargeCompanyDomain().Add(new TargeCompanyEntity { TaskGuid = model.Unique, CompanyName = companyName, CreateTime = TaskEntity.CreateTime, IsSearched = false, OperatorName = operatorName });
                             Console.WriteLine("成功插入：{0} 线程 {1}", Task.CurrentId, companyName);
                             lists.Remove(companyName);
                         }
@@ -55,6 +55,7 @@ namespace LiGather.Crawler
             //更新任务状态
             model.TaskStateDicId = 2;
             new TaskDomain().Update(model);
+            action(TaskEntity);
             Console.WriteLine("数据导入完毕");
         }
     }
