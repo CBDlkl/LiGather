@@ -4,7 +4,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using FSLib.Network.Http;
 using Ivony.Html;
@@ -14,7 +13,6 @@ using LiGather.DataPersistence.Proxy;
 using LiGather.Model.Domain;
 using LiGather.Model.Log;
 using LiGather.Model.WebDomain;
-using LiGather.Util;
 using LiGather.Util.URL;
 
 namespace LiGather.Crawler.Bjqyxy
@@ -102,18 +100,22 @@ namespace LiGather.Crawler.Bjqyxy
                 TaskEntity.TaskStateDicId = 3;
                 new TaskDomain().Update(TaskEntity);
                 new LogDomain().Add(new LogEntity { LogType = "success", TaskName = TaskEntity.TaskName, TriggerTime = DateTime.Now });
-                Console.WriteLine("所有任务已经完成 {0}", DateTime.Now);
             }
             catch (Exception e)
             {
-                new LogDomain().Add(new LogEntity { LogType = "error", TaskName = TaskEntity.TaskName, ErrorDetails = "线程死亡：" + e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
+                //主线程错误，导致任务终止，修改任务状态为 错误状态
+                TaskEntity.TaskStateDicId = 4;
+                new TaskDomain().Update(TaskEntity);
+                new LogDomain().Add(new LogEntity { LogType = "error", TaskName = TaskEntity.TaskName, ErrorDetails = Task.CurrentId + "主线程死亡：" + e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
+                //主线程重启
+                CrawlerWork();
             }
         }
 
         private void BaseWork()
         {
             bool isReloadCompany = true; //是否重新获取新的企业名称
-            string companyOld = "";
+            string companyOld = ""; //记忆企业名称
             var companyEntity = new TargeCompanyEntity();
             var httpClient = new HttpClient();
             httpClient.Setting.Timeout = 1000 * 5;
@@ -123,7 +125,6 @@ namespace LiGather.Crawler.Bjqyxy
                 var targetModel = new CrawlerEntity { 操作人姓名 = TaskEntity.OperatorName, 入爬行库时间 = TaskEntity.CreateTime, TaskGuid = TaskEntity.Unique };
                 try
                 {
-                    //Thread.Sleep(250);
                     //查询资源预处理
                     if (isReloadCompany)
                     {
@@ -148,23 +149,7 @@ namespace LiGather.Crawler.Bjqyxy
                         Console.WriteLine("线上获取到了代理：{0}:{1}", proxyEntity.IpAddress, proxyEntity.Port);
                     }
 
-                    new LogDomain().Add(new LogEntity
-                    {
-                        Details = $"{Task.CurrentId} IP代理准备挂载：{proxyEntity.IpAddress}",
-                        TriggerTime = DateTime.Now,
-                        TaskName = TaskEntity.TaskName,
-                        LogType = "info"
-                    });
-
                     httpClient.Setting.Proxy = new WebProxy(proxyEntity.IpAddress, proxyEntity.Port);
-
-                    new LogDomain().Add(new LogEntity
-                    {
-                        Details = $"{Task.CurrentId} IP代理挂载完成",
-                        TriggerTime = DateTime.Now,
-                        TaskName = TaskEntity.TaskName,
-                        LogType = "info"
-                    });
 
                     var resultBody = httpClient.Create<string>(HttpMethod.Post, targetUrl, data: new
                     {
@@ -229,13 +214,106 @@ namespace LiGather.Crawler.Bjqyxy
                 }
                 catch (Exception e)
                 {
-                    companyEntity.IsSearched = true;
-                    companyEntity.IsAbnormal = true;
-                    new TargeCompanyDomain().Update(companyEntity);
-                    new LogDomain().Add(new LogEntity { LogType = "error", TaskName = TaskEntity.TaskName, ErrorDetails = e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
-                    AddNull(targetModel);
+                    isReloadCompany = true;
+                    new LogDomain().Add(new LogEntity { LogType = "error", TaskName = TaskEntity.TaskName, ErrorDetails = Task.CurrentId + "线程： " + e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
+                    continue;
                 }
                 isReloadCompany = true;
+            }
+        }
+
+        /// <summary>
+        /// 单个查询
+        /// </summary>
+        /// <param name="companyName"></param>
+        public void SingelSearch(string companyName)
+        {
+            var companyEntity = new TargeCompanyEntity();
+            var httpClient = new HttpClient();
+            httpClient.Setting.Timeout = 1000 * 5;
+            httpClient.Create<string>(HttpMethod.Post, firsturl).Send();
+            while (true)
+            {
+                var targetModel = new CrawlerEntity { 搜索名称 = companyName, 操作人姓名 = TaskEntity.OperatorName, 入爬行库时间 = TaskEntity.CreateTime, TaskGuid = TaskEntity.Unique };
+                try
+                {
+                    //IP处理
+                    var proxyEntity = new ProxyDomain().GetByRandom(); //代理IP
+                    if (proxyEntity == null)
+                    {
+                        Console.WriteLine("在线代理临时获取策略启动。");
+                        proxyEntity = Proxy.Proxy.GetInstance().GetHttProxyEntity();
+                        Console.WriteLine("线上获取到了代理：{0}:{1}", proxyEntity.IpAddress, proxyEntity.Port);
+                    }
+
+                    httpClient.Setting.Proxy = new WebProxy(proxyEntity.IpAddress, proxyEntity.Port);
+
+                    var resultBody = httpClient.Create<string>(HttpMethod.Post, targetUrl, data: new
+                    {
+                        queryStr = targetModel.搜索名称,
+                        module = "",
+                        idFlag = "qyxy"
+                    }).Send();
+                    if (!resultBody.IsValid())
+                    {
+                        RemoveOldIp(proxyEntity);
+                        continue;
+                    }
+                    if (ValidText(resultBody.Result))
+                    {
+                        RemoveOldIp(proxyEntity);
+                        continue;
+                    }
+                    //提取二级连接
+                    var parser = new JumonyParser();
+                    var urls = parser.Parse(resultBody.Result).Find("li a").ToList();
+                    var nextUrl = "";
+                    if (urls.Count < 1)
+                    {
+                        AddNull(targetModel);
+                        break;
+                    }
+                    foreach (var htmlElement in urls)
+                    {
+                        targetModel.名称 = htmlElement.InnerText();
+                        nextUrl = url + htmlElement.Attribute("href").AttributeValue;
+                    }
+                    //提取目标正文
+                    var resultsecondBody =
+                        httpClient.Create<string>(HttpMethod.Get, zhuUrl + new Uri(firsturl + nextUrl).Query).Send();
+                    var nameValueCollection =
+                        new NameValueCollection(URL.GetQueryString(new Uri(firsturl + nextUrl).Query));
+                    if (!resultsecondBody.IsValid())
+                    {
+                        RemoveOldIp(proxyEntity);
+                        continue;
+                    }
+                    if (ValidText(resultsecondBody.Result))
+                    {
+                        RemoveOldIp(proxyEntity);
+                        continue;
+                    }
+                    //正文处理
+                    var sorceIhtml = new JumonyParser().Parse(resultsecondBody.Result.Replace("<th", "<td"));
+                    var tableLists = sorceIhtml.Find("table[class='f-lbiao']").ToList();
+                    var listall = new List<string>();
+                    foreach (var tableList in tableLists)
+                        tableList.Find("tr td")
+                            .ForEach(t => listall.Add(t.InnerText().TrimEnd(':').TrimEnd('：').Trim()));
+                    var fillModel = FillModel(listall);
+                    fillModel.全局唯一编号 = nameValueCollection["reg_bus_ent_id"].ToUpper();
+                    new CrawlerDomain().Add(StrategyNo1(fillModel, targetModel));
+                    //后续其他处理 包括了IP使用状态，以查询列表状态
+                    proxyEntity.Usage = proxyEntity.Usage + 1;
+                    new ProxyDomain().Update(proxyEntity);
+                    Console.WriteLine("{0} 抓取到：{1}", Task.CurrentId, targetModel.搜索名称);
+                }
+                catch (Exception e)
+                {
+                    new LogDomain().Add(new LogEntity { LogType = "error", TaskName = TaskEntity.TaskName, ErrorDetails = Task.CurrentId + "线程： " + e.Message, Details = e.ToString(), TriggerTime = DateTime.Now });
+                    continue;
+                }
+                break;
             }
         }
 

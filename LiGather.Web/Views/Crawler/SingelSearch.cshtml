@@ -1,0 +1,177 @@
+﻿@model LiGather.Model.Domain.CrawlerEntity
+
+@{
+    ViewBag.Title = "企业数据查询中心 - 独立查询";
+    Layout = "../_LayoutPage.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12">
+            <br/>
+            @using (Html.BeginForm("SingelSearch", "Crawler", FormMethod.Post, new {@id = "searchForm", @class = "bs-example bs-example-form"}))
+            {
+                <div class="input-group">
+                    @Html.TextBox("companyName", "", new {@class = "form-control", @placeholder = "搜索企业名称（精确匹配）"})
+                    @Html.Hidden("Guid", (object) ViewBag.Guid)
+                    <span class="input-group-btn">
+                        <button class="btn btn-primary" type="button" onclick="formSubmit()">
+                            <span class="glyphicon glyphicon-search"></span>  查  询
+                        </button>
+                    </span>
+                </div>
+            }
+        </div>
+        <div class="col-lg-12">
+            <hr>
+            <div>
+                @if (Model == null)
+                {
+                    <h2 class="text-center">未查询到内容！</h2>
+                }
+                else
+                {
+                    <div class="col-lg-6">
+                        <h4>工商数据</h4>
+                        <dl class="dl-horizontal">
+                            <dt>@Html.LabelFor(t => t.名称)</dt>
+                            <dd>@Model.名称</dd>
+
+                            <dt>@Html.LabelFor(t => t.统一社会信用代码)</dt>
+                            <dd>@Model.统一社会信用代码</dd>
+
+                            <dt>@Html.LabelFor(t => t.注册号)</dt>
+                            <dd>@Model.注册号</dd>
+
+                            <dt>@Html.LabelFor(t => t.类型)</dt>
+                            <dd>@Model.类型</dd>
+
+                            <dt>@Html.LabelFor(t => t.负责人)</dt>
+                            <dd>@Model.负责人</dd>
+
+                            <dt>@Html.LabelFor(t => t.法人姓名)</dt>
+                            <dd>@Model.法人姓名</dd>
+
+                            <dt>@Html.LabelFor(t => t.法定代表人)</dt>
+                            <dd>@Model.法定代表人</dd>
+
+                            <dt>@Html.LabelFor(t => t.营业场所)</dt>
+                            <dd>@Model.营业场所</dd>
+
+                            <dt>@Html.LabelFor(t => t.住所)</dt>
+                            <dd>@Model.住所</dd>
+
+                            <dt>@Html.LabelFor(t => t.营业期限自)</dt>
+                            <dd>@Model.营业期限自</dd>
+
+                            <dt>@Html.LabelFor(t => t.营业期限至)</dt>
+                            <dd>@Model.营业期限至</dd>
+
+                            <dt>@Html.LabelFor(t => t.经营范围)</dt>
+                            <dd>@Model.经营范围</dd>
+
+                            <dt>@Html.LabelFor(t => t.登记机关)</dt>
+                            <dd>@Model.登记机关</dd>
+
+                            <dt>@Html.LabelFor(t => t.核准日期)</dt>
+                            <dd>@Model.核准日期</dd>
+
+                            <dt>@Html.LabelFor(t => t.成立日期)</dt>
+                            <dd>@Model.成立日期</dd>
+
+                            <dt>@Html.LabelFor(t => t.登记状态)</dt>
+                            <dd>@Model.登记状态</dd>
+
+                            <dt>@Html.LabelFor(t => t.纳税人名称)</dt>
+                            <dd>@Model.纳税人名称</dd>
+
+                            <dt>@Html.LabelFor(t => t.税务登记类型)</dt>
+                            <dd>@Model.税务登记类型</dd>
+
+
+
+                            <dt>@Html.LabelFor(t => t.注册资本)</dt>
+                            <dd>@Model.注册资本</dd>
+
+                            <dt>@Html.LabelFor(t => t.实收资本)</dt>
+                            <dd>@Model.实收资本</dd>
+
+                            <dt>@Html.LabelFor(t => t.实缴出资金额)</dt>
+                            <dd>@Model.实缴出资金额</dd>
+
+                            <dt>@Html.LabelFor(t => t.资金单位)</dt>
+                            <dd>@Model.资金单位</dd>
+
+                            <dt>@Html.LabelFor(t => t.币种)</dt>
+                            <dd>@Model.币种</dd>
+
+                            <dt>@Html.LabelFor(t => t.最终实缴出资时间)</dt>
+                            <dd>@Model.最终实缴出资时间</dd>
+
+                            <dt>@Html.LabelFor(t => t.最终认缴出资时间)</dt>
+                            <dd>@Model.最终认缴出资时间</dd>
+                        </dl>
+                    </div>
+                    <div class="col-lg-6">
+                        <h4>地税数据</h4>
+                        <dl class="dl-horizontal">
+                            <dt>@Html.LabelFor(t => t.组织机构代码)</dt>
+                            <dd>@Model.组织机构代码</dd>
+
+                            <dt>@Html.LabelFor(t => t.登记受理类型)</dt>
+                            <dd>@Model.登记受理类型</dd>
+
+                            <dt>@Html.LabelFor(t => t.经营地址)</dt>
+                            <dd>@Model.经营地址</dd>
+
+                            <dt>@Html.LabelFor(t => t.经营地址联系电话)</dt>
+                            <dd>@Model.经营地址联系电话</dd>
+
+                            <dt>@Html.LabelFor(t => t.经营地址邮编)</dt>
+                            <dd>@Model.经营地址邮编</dd>
+
+                            <dt>@Html.LabelFor(t => t.企业主页网址)</dt>
+                            <dd>@Model.企业主页网址</dd>
+
+                            <dt>@Html.LabelFor(t => t.所处街乡)</dt>
+                            <dd>@Model.所处街乡</dd>
+
+                            <dt>@Html.LabelFor(t => t.国地税共管户标识)</dt>
+                            <dd>@Model.国地税共管户标识</dd>
+
+                            <dt>@Html.LabelFor(t => t.登记注册类型)</dt>
+                            <dd>@Model.登记注册类型</dd>
+
+                            <dt>@Html.LabelFor(t => t.隶属关系)</dt>
+                            <dd>@Model.隶属关系</dd>
+
+                            <dt>@Html.LabelFor(t => t.国家标准行业)</dt>
+                            <dd>@Model.国家标准行业</dd>
+
+                            <dt>@Html.LabelFor(t => t.税务登记日期)</dt>
+                            <dd>@Model.税务登记日期</dd>
+
+                            <dt>@Html.LabelFor(t => t.主管税务机关)</dt>
+                            <dd>@Model.主管税务机关</dd>
+
+                            <dt>@Html.LabelFor(t => t.纳税人状态)</dt>
+                            <dd>@Model.纳税人状态</dd>
+                        </dl>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script{
+    <script type="text/javascript">
+    var formSubmit = function() {
+        layer.msg('搜索中...', { icon: 16, time: 1000 * 3, shade: 0.5 }, function() {
+            layer.msg('缓存库中没有查找到记录，正在启用代理去公网搜索，这需要一段时间，请稍等...', { icon: 16, time: 1000 * 1000, shade: 0.5 });
+        });
+        $("form#searchForm").submit();
+    };
+    </script>
+}

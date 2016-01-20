@@ -10,6 +10,7 @@ using System.Web.Mvc;
 using LiGather.Model.WebDomain;
 using LiGather.Crawler;
 using LiGather.DataPersistence.Domain;
+using LiGather.Model.Domain;
 using LiGather.Model.Log;
 using LiGather.Util;
 
@@ -20,7 +21,55 @@ namespace LiGather.Web.Controllers
 
         public ActionResult TaskList()
         {
-            return View(new TaskDomain().Get().ToList());
+            return View(new TaskDomain().Get(t => t.IsSingelSearch == false).ToList());
+        }
+
+        public ActionResult SingelSearch(string guid = null, string companyName = null)
+        {
+            CrawlerEntity crawlerEntity = null;
+            if (string.IsNullOrWhiteSpace(guid) && string.IsNullOrWhiteSpace(companyName))
+            {
+                ViewBag.Guid = Guid.NewGuid();
+            }
+            else
+            {
+                ViewBag.Guid = guid;
+                var count = new TargeCompanyDomain().Get(t => t.CompanyName.Equals(companyName))?.Count;
+                if (count > 0)
+                {
+                    //历史记录中已存在
+                }
+                else
+                {
+                    //上网检索
+                    List<string> companyList = new List<string> { companyName };
+                    TaskEntity model = new TaskEntity();
+                    model.TaskName = $"单个任务[{DateTime.Now.ToString("G")}]";
+                    model.Unique = Conv.ToGuid(guid);
+                    model.TaskStateDicId = 1;
+                    model.TaskNum = 1;
+                    model.CreateTime = DateTime.Now;
+                    model.IsSingelSearch = true;
+                    new TaskDomain().Add(model);
+                    new BaseData(model).InsertMetadata(companyList.ToList(), model.TaskName, model, taskEntity =>
+                    {
+                        Task[] tasks = new Task[4];
+                        for (int i = 0; i < 4; i++)
+                        {
+                            tasks[i] = new Task(() =>
+                            {
+                                var bjqyxy = new Crawler.Bjqyxy.BjCrawler(taskEntity, t => t.TaskGuid.Equals(taskEntity.Unique));
+                                bjqyxy.SingelSearch(companyName);
+                            });
+                            tasks[i].Start();
+                        }
+                        Task.WaitAny(tasks);
+                    });
+
+                }
+                crawlerEntity = new CrawlerDomain().Get(t => t.搜索名称 == companyName && t.名称 != null).FirstOrDefault();
+            }
+            return View(crawlerEntity);
         }
 
         public ActionResult Detail()
@@ -46,6 +95,7 @@ namespace LiGather.Web.Controllers
             model.TaskStateDicId = 1;
             model.TaskNum = companyList.Count;
             model.CreateTime = DateTime.Now;
+            model.IsSingelSearch = false;
             new TaskDomain().Add(model);
             new Task(() =>
             {
@@ -67,9 +117,9 @@ namespace LiGather.Web.Controllers
         public ActionResult GoGather(TaskEntity model)
         {
             //Thread.Sleep(1000 * 3); //默认等待三秒
-            ////抓取数据
-            //var bjqyxy = new Crawler.Bjqyxy.BjCrawler(model, t => t.TaskGuid.Equals(model.Unique));
-            //new Task(() => { bjqyxy.CrawlerWork(); }).Start();
+            //抓取数据
+            var bjqyxy = new Crawler.Bjqyxy.BjCrawler(model, t => t.TaskGuid.Equals(model.Unique));
+            new Task(() => { bjqyxy.CrawlerWork(); }).Start();
             return Json(new { state = "nothion" });
         }
 

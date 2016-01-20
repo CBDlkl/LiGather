@@ -19,6 +19,8 @@ namespace LiGather.Model.WebDomain
         public DateTime? EndTime { set; get; }
         [Display(Name = "操作者姓名")]
         public string OperatorName { set; get; }
+        [Display(Name = "是否为单个查询")]
+        public bool IsSingelSearch { set; get; }
         [Display(Name = "任务状态")]
         public TaskStateDic TaskStateDic { set; get; }
         public int TaskStateDicId { set; get; }

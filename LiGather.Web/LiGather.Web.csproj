@@ -128,6 +128,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\SingelSearchModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +144,8 @@
     <Content Include="Views\Crawler\CreateTask.cshtml" />
     <None Include="Properties\PublishProfiles\发布到web.pubxml" />
     <None Include="Properties\PublishProfiles\文件系统.pubxml" />
+    <Content Include="Views\Crawler\SingelSearch.cshtml" />
+    <Content Include="Views\_LayoutPage.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -154,7 +157,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LiGather.Crawler\LiGather.Crawler.csproj">

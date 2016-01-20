@@ -4,196 +4,196 @@
 @model List<TaskEntity>
 
 @{
-    Layout = null;
+    ViewBag.Title = "企业数据查询中心 - 任务列表";
+    Layout = "../_LayoutPage.cshtml";
 }
 
-<!DOCTYPE>
-<html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>任务列表</title>
-    <link href="~/Content/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css" />
-    <script src="~/Content/bootstrap/js/jquery-1.11.3.js"></script>
-    <script src="~/Content/layer/layer.js"></script>
-    <script src="~/Content/bootstrap/js/bootstrap.js" type="text/javascript"></script>
-    <script src="//cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js" type="text/javascript"></script>
-</head>
-<body>
-    <div class="container">
-        <br />
-        <div class="row">
-            <div class="col-lg-12">
-                <form class="bs-example bs-example-form" role="form">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="搜索任务名称">
-                        <span class="input-group-btn">
-                            <button class="btn btn-primary" type="button">
-                                <span class="glyphicon glyphicon-search"></span>  查  询
-                            </button>
-                        </span>
-                    </div>
-                </form>
-            </div>
+<div class="container">
+    <br />
+    <div class="row">
+        <div class="col-lg-12">
+            <form class="bs-example bs-example-form" role="form">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="搜索任务名称">
+                    <span class="input-group-btn">
+                        <button class="btn btn-primary" type="button">
+                            <span class="glyphicon glyphicon-search"></span>  查  询
+                        </button>
+                    </span>
+                </div>
+            </form>
         </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="alert alert-warning fade in">
-                    <a href="#" class="close" data-dismiss="alert">
-                        &times;
-                    </a>
-                    <strong>说明:</strong> 此处显示所有已完成或正在进行的爬取任务。<label onclick="stateMessage()">[状态说明]</label>
-                </div>
-                <p>
-                    <button type="button" class="btn btn-primary" onclick="openNew()">
-                        <span class="glyphicon glyphicon-plus"></span> 创建新任务
-                    </button>
-                </p>
-                <div class="table-responsive">
-                    <table class="table table-hover table-striped table-bordered">
-                        <thead>
-                            <tr class="active">
-                                <td class="text-center">
-                                    任务名称
-                                </td>
-                                <td class="text-center">
-                                    总任务数
-                                </td>
-                                <td class="text-center" style="width: 400px;">
-                                    任务进度
-                                </td>
-                                @*<td class="text-center">
-                                        已运行
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <hr />
+            <div class="alert alert-warning fade in">
+                <a href="#" class="close" data-dismiss="alert">
+                    &times;
+                </a>
+                <strong>说明:</strong> 此处显示所有已完成或正在进行的爬取任务。<label onclick="stateMessage()">[状态说明]</label>
+            </div>
+            <p>
+                <button type="button" class="btn btn-primary" onclick="openNew()">
+                    <span class="glyphicon glyphicon-plus"></span> 创建新任务
+                </button>
+            </p>
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-bordered">
+                    <thead>
+                    <tr class="active">
+                        <td class="text-center">
+                            任务名称
+                        </td>
+                        <td class="text-center">
+                            总任务数
+                        </td>
+                        <td class="text-center" style="width: 400px;">
+                            任务进度
+                        </td>
+                        @*<td class="text-center">
+                                    已运行
+                                </td>*@
+                        <td class="text-center">
+                            任务创建人
+                        </td>
+                        <td class="text-center">
+                            创建时间
+                        </td>
+                        <td class="text-center">
+                            任务状态
+                        </td>
+                        <td style="width: 0;"></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var taskEntity in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="glyphicon glyphicon-tag"></span>
+                                @taskEntity.TaskName
+                            </td>
+                            <td class="text-right">
+                                @taskEntity.TaskNum
+                            </td>
+                            <td>
+                                <div class="progress progress-striped active" style="margin-bottom: 0;">
+                                    <div style="width: 0;" class="progress-bar @taskEntity.Unique">
+                                        <strong>0</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            @*<td class="text-right">
+                                        @if (taskEntity.EndTime == null)
+                                        {
+                                            @Timer.DateDiff(DateTime.Now, taskEntity.CreateTime);
+                                        }
+                                        else
+                                        {
+                                            @Timer.DateDiff((DateTime)taskEntity.EndTime, taskEntity.CreateTime)
+                                        }
                                     </td>*@
-                                <td class="text-center">
-                                    任务创建人
-                                </td>
-                                <td class="text-center">
-                                    创建时间
-                                </td>
-                                <td class="text-center">
-                                    任务状态
-                                </td>
-                                <td style="width: 0;"></td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var taskEntity in Model)
-                            {
-                                <tr>
-                                    <td>
-                                        <span class="glyphicon glyphicon-tag"></span>
-                                        @taskEntity.TaskName
-                                    </td>
-                                    <td class="text-right">
-                                        @taskEntity.TaskNum
-                                    </td>
-                                    <td>
-                                        <div class="progress progress-striped active" style="margin-bottom: 0;">
-                                            <div style="width: 0;" class="progress-bar @taskEntity.Unique">
-                                                <strong>0</strong>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    @*<td class="text-right">
-                                            @if (taskEntity.EndTime == null)
-                                            {
-                                                @Timer.DateDiff(DateTime.Now, taskEntity.CreateTime);
-                                            }
-                                            else
-                                            {
-                                                @Timer.DateDiff((DateTime)taskEntity.EndTime, taskEntity.CreateTime)
-                                            }
-                                        </td>*@
-                                    <td class="text-center">
-                                        @taskEntity.OperatorName
-                                    </td>
-                                    <td class="text-center">
-                                        @taskEntity.CreateTime.ToString("yyyy年MM月dd日 hh时mm分ss秒")
-                                    </td>
-                                    <td class="text-center" id="@taskEntity.Unique">
-                                        @Html.LabelForState(taskEntity.TaskStateDic.TaskStateName, taskEntity.TaskStateDic.LabelClass)
-                                    </td>
-                                    <td>
-                                        <script type="text/javascript">
-                                            (function ($) {
-                                                var $task = $('div.@taskEntity.Unique');
-                                                function checkInsert() {
-                                                    var i = 0;
-                                                    var insertInterval = setInterval(function () {
-                                                        if (i == parseInt('@taskEntity.TaskNum')) {
-                                                            goGather();
-                                                            window.clearInterval(insertInterval);
-                                                        }
-                                                        $.post('@Url.Action("CheckInsertMetadata")', @Html.Raw( @JsonConvert.SerializeObject(taskEntity)), function (data) {
-                                                            i = data.num;
-                                                            var percentage = Percentage(data.num, parseInt('@taskEntity.TaskNum'));
-                                                            $task.css('width', percentage + "%");
-                                                            $task.find("strong").text(percentage + "%");
-                                                        });
-                                                    }, 1000);
-                                                };
+                            <td class="text-center">
+                                @taskEntity.OperatorName
+                            </td>
+                            <td class="text-center">
+                                @taskEntity.CreateTime.ToString("yyyy年MM月dd日 hh时mm分ss秒")
+                            </td>
+                            <td class="text-center" id="@taskEntity.Unique">
+                                @Html.LabelForState(taskEntity.TaskStateDic.TaskStateName, taskEntity.TaskStateDic.LabelClass)
+                            </td>
+                            <td>
+                                <script type="text/javascript">
+                                    (function($) {
+                                        var $task = $('div.@taskEntity.Unique');
 
-                                                var $labelSpan = $('td#@taskEntity.Unique span');
-                                                function goGather() {
-                                                    $.post('@Url.Action("GoGather")',@Html.Raw( @JsonConvert.SerializeObject(taskEntity)), function (data) {
-                                                        $labelSpan.attr('class', 'label label-warning').text('数据抓取中');
-                                                        //启动监听
-                                                        checkGather();
-                                                    });
-                                                };
-
-                                                function checkGather() {
-                                                    var n;
-                                                    var gatherInterval = setInterval(function () {
-                                                        if (n == parseInt('@taskEntity.TaskNum')) {
-                                                            var $a = $('<a href=\'#\' onclick=\"DownLoadConfig(\'@taskEntity.TaskNum\',\'@taskEntity.Unique\')\"></a>');
-                                                            $a.append($labelSpan.attr('class', 'label label-success').text('采集完成/下载'));
-                                                            $('td#@taskEntity.Unique').html('').append($a);
-                                                            window.clearInterval(gatherInterval);
-                                                        }
-                                                        $.post('@Url.Action("CheckGoGather")', @Html.Raw( @JsonConvert.SerializeObject(taskEntity)), function (data) {
-                                                            n = data.num;
-                                                            var percentage = Percentage(data.num, parseInt('@taskEntity.TaskNum'));
-                                                            $task.css('width', percentage + "%");
-                                                            $task.find("strong").text(percentage + "%");
-                                                        });
-                                                    }, 1000);
-                                                };
-
-                                                function endShowDown() {
-                                                    var $a = $('<a href=\'#\' onclick=\"DownLoadConfig(\'@taskEntity.TaskNum\',\'@taskEntity.Unique\')\"></a>');
-                                                    $a.append($labelSpan.attr('class', 'label label-success').text('采集完成/下载'));
-                                                    $('td#@taskEntity.Unique').html('').append($a);
-
-                                                    $task.css('width', "100%");
-                                                    $task.find("strong").text("100%");
-                                                };
-
-                                                @if (taskEntity.TaskStateDicId == 1)
-                                                {
-                                                    @:checkInsert();
+                                        function checkInsert() {
+                                            var i = 0;
+                                            var insertInterval = setInterval(function() {
+                                                if (i == parseInt('@taskEntity.TaskNum')) {
+                                                    goGather();
+                                                    window.clearInterval(insertInterval);
                                                 }
-                                                @if (taskEntity.TaskStateDicId == 2)
-                                                {
-                                                    @:checkGather();
+                                                $.post('@Url.Action("CheckInsertMetadata")', @Html.Raw(@JsonConvert.SerializeObject(taskEntity)), function(data) {
+                                                    i = data.num;
+                                                    var percentage = Percentage(data.num, parseInt('@taskEntity.TaskNum'));
+                                                    $task.css('width', percentage + "%");
+                                                    $task.find("strong").text(percentage + "%");
+                                                });
+                                            }, 1000);
+                                        };
+
+                                        var $labelSpan = $('td#@taskEntity.Unique span');
+
+                                        function goGather() {
+                                            $.post('@Url.Action("GoGather")', @Html.Raw(@JsonConvert.SerializeObject(taskEntity)), function(data) {
+                                                $labelSpan.attr('class', 'label label-warning').text('数据抓取中');
+                                                //启动监听
+                                                checkGather();
+                                            });
+                                        };
+
+                                        function checkGather() {
+                                            var n;
+                                            var gatherInterval = setInterval(function() {
+                                                if (n == parseInt('@taskEntity.TaskNum')) {
+                                                    endShowDown();
+                                                    window.clearInterval(gatherInterval);
                                                 }
-                                                @if (taskEntity.TaskStateDicId == 3)
-                                                {
-                                                    @:endShowDown();
-                                                }
-                                            })(jQuery);
-                                        </script>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                                                $.post('@Url.Action("CheckGoGather")', @Html.Raw(@JsonConvert.SerializeObject(taskEntity)), function(data) {
+                                                    n = data.num;
+                                                    var percentage = Percentage(data.num, parseInt('@taskEntity.TaskNum'));
+                                                    $task.css('width', percentage + "%");
+                                                    $task.find("strong").text(percentage + "%");
+                                                });
+                                            }, 1000);
+                                        };
+
+                                        function reload() {
+                                            $labelSpan.attr('class', 'label label-warning').text('采集恢复');
+                                            checkGather();
+                                        };
+
+                                        function endShowDown() {
+                                            var $a = $('<a href=\'#\' onclick=\"DownLoadConfig(\'@taskEntity.TaskNum\',\'@taskEntity.Unique\')\"></a>');
+                                            $a.append($labelSpan.attr('class', 'label label-success').text('采集完成/下载'));
+                                            $('td#@taskEntity.Unique').html('').append($a);
+
+                                            $task.css('width', "100%");
+                                            $task.find("strong").text("100%");
+                                        };
+
+                                        @if (taskEntity.TaskStateDicId == 1)
+                                        {
+                                            @:checkInsert();
+                                        }
+                                        @if (taskEntity.TaskStateDicId == 2)
+                                        {
+                                            @:checkGather();
+                                        }
+                                        @if (taskEntity.TaskStateDicId == 3)
+                                        {
+                                            @:endShowDown();
+                                        }
+                                        @if (taskEntity.TaskStateDicId == 4)
+                                        {
+                                            @:reload();
+                                        }
+                                    })(jQuery);
+                                </script>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
 
-<script type="text/javascript">
+@section Script{
+    <script type="text/javascript">
     $(function() {
         if ($.cookie('firstOpen') == null) {
             $.cookie('firstOpen', true);
@@ -203,9 +203,9 @@
             $.cookie('firstOpen', false);
         }
     });
-    
+
     var stateMessage = function() {
-        layer.alert('<dl><dt><label class="label label-primary">入库初始化</label></dt><dd>[正在将用户提供的抓取列表导入到执行队列中的状态]</dd><dt><label class="label label-warning">数据抓取中</label></dt><dd>[正在抓取网络上数据的状态]</dd><dt><label class="label label-success">采集完成/下载</label></dt><dd>[已经完成所有抓取任务，点击可以下载Excel结果]</dd><dt><label class="label label-danger">采集错误</label></dt><dd>[任务出现致命错误，导致任务失败，请查看日志]</dd></dl>',
+        layer.alert('<dl><dt><label class="label label-primary">入库初始化</label></dt><dd>[正在将用户提供的抓取列表导入到执行队列中的状态]</dd><dt><label class="label label-warning">数据抓取中</label></dt><dd>[正在抓取网络上数据的状态]</dd><dt><label class="label label-success">采集完成/下载</label></dt><dd>[已经完成所有抓取任务，点击可以下载Excel结果]</dd><dt><label class="label label-danger">采集恢复</label></dt><dd>[任务出现致命错误，导致任务受阻，系统会自动修复，但请查看错误日志]</dd></dl>',
         {
             title: "使用说明",
             shade: 0.8,
@@ -213,7 +213,7 @@
             area: ['400px']
         });
     };
-    
+
     var openNew = function() {
         layer.open({
             type: 2,
@@ -249,11 +249,10 @@
             if (num >= 10000) {
                 layer.msg('您即将导出的文档较大，请耐心等待！', { icon: 1, shade: 0.5 });
                 window.open("@Url.Action("Export")?isOptimize=" + isOptimize + "&Unique=" + unique, 'newwindow', 'height=100,width=400,top=0,left=0,toolbar=no,menubar=no,scrollbars=no,resizable=no,location=no,status=no');
-            } else {                                                                                                                                                                                          
+            } else {
                 window.open("@Url.Action("Export")?isOptimize=" + isOptimize + "&Unique=" + unique, 'newwindow', 'height=100,width=400,top=0,left=0,toolbar=no,menubar=no,scrollbars=no,resizable=no,location=no,status=no');
             }
         });
     };
 </script>
-</body>
-</html>
+}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Linq.Expressions;
@@ -11,6 +12,15 @@ namespace LiGather.DataPersistence.Domain
     {
         private readonly LiGatherContext _db = new LiGatherContext();
         private readonly object _obj = new object();
+
+        public List<TargeCompanyEntity> Get(Expression<Func<TargeCompanyEntity, bool>> expression)
+        {
+            lock (_obj)
+            {
+                return _db.TrCompanyEntities.Where(expression)?.ToList();
+            }
+        }
+
         public void Add(TargeCompanyEntity model)
         {
             lock (_obj)
