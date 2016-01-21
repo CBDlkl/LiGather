@@ -1,0 +1,110 @@
+﻿@model LiGather.Model.WebDomain.TaskEntity
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>创建新任务</title>
+    <link href="~/Content/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div class="container">
+        <br />
+        <div class="col-lg-12">
+            <div class="row">
+                @using (Html.BeginForm("Create", "QgCrawler", FormMethod.Post, new { id = "taskForm", enctype = "multipart/form-data" }))
+                {
+                    @Html.HiddenFor(model => model.Unique, new { @Value = ViewBag.Unique })
+                    @Html.AntiForgeryToken()
+                    <div class="form-horizontal">
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.TaskName, htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-10">
+                                @Html.EditorFor(model => model.TaskName, new { htmlAttributes = new { @class = "form-control", @placeholder = "请输入任务名称", @required = "required" } })
+                                @Html.ValidationMessageFor(model => model.TaskName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.OperatorName, htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-10">
+                                @Html.EditorFor(model => model.OperatorName, new { htmlAttributes = new { @class = "form-control", @placeholder = "请输入您的姓名", @required = "required" } })
+                                @Html.ValidationMessageFor(model => model.OperatorName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-md-2" for="txtfile">选择文件上传列表(.txt)</label>
+                            <div class="col-md-10">
+                                <input type="file" id="txtfile" name="txtfile" ccept="text/plain">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10">
+                                <input type="button" id="butsubmit" class="btn btn-primary btn-block" value="提交任务" />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <script src="~/Content/bootstrap/js/jquery-1.11.3.js"></script>
+    <script src="~/Content/layer/layer.js"></script>
+    <script src="~/Content/bootstrap/js/bootstrap.js" type="text/javascript"></script>
+    <script src="~/Scripts/jquery.form.js"></script>
+    <script type="text/javascript">
+        $("#butsubmit").click(function () {
+            var $TaskName = $("input#TaskName");
+            var $OperatorName = $("input#OperatorName");
+            var $txtfile = $("input#txtfile");
+            if ($TaskName.val() == '') {
+                parent.layer.msg("任务名称不能为空！", {
+                    icon: 0,
+                    shade: 0.5, shadeClose:true,
+                    time: 2000
+                });
+                return;
+            }
+            if ($OperatorName.val() == '') {
+                parent.layer.msg("操作执行人不能为空！", {
+                    icon: 0,
+                    shade: 0.5, shadeClose: true,
+                    time: 2000
+                });
+                return;
+            }
+            if ($txtfile.val() == '') {
+                parent.layer.msg("请选择任务目录！", {
+                    icon: 0,
+                    shade: 0.5, shadeClose: true,
+                    time: 2000
+                });
+                return;
+            }
+
+            var index = layer.load();
+            var options = {
+                success: function (data) {
+                    layer.close(index);
+                    parent.layer.msg(data.msg, {
+                        icon: 1,
+                        shade: 0.5,
+                        time: 2000
+                    }, function () {
+                        window.parent.location.reload();
+                    });
+                }
+            };
+            $("#taskForm").ajaxSubmit(options);
+        });
+    </script>
+</body>
+</html>

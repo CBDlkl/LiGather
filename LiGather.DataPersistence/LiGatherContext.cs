@@ -19,6 +19,7 @@ namespace LiGather.DataPersistence
         public DbSet<LogEntity> LogEntities { set; get; }
         public DbSet<TaskEntity> TaskEntities { set; get; }
         public DbSet<TaskStateDic> TaskStateDics { set; get; }
+        public DbSet<QgOrgCodeEntity> QgOrgCodeEntities { set; get; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

@@ -3,6 +3,21 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LiGather.Model.WebDomain
 {
+    /// <summary>
+    /// 任务类型
+    /// </summary>
+    public enum EnumTaskType
+    {
+        /// <summary>
+        /// 北京爬取任务
+        /// </summary>
+        BjCrawler = 1,
+        /// <summary>
+        /// 全国爬取任务
+        /// </summary>
+        QgCrawler = 2
+    }
+
     public class TaskEntity
     {
         [Key]
@@ -13,6 +28,8 @@ namespace LiGather.Model.WebDomain
         public string TaskName { set; get; }
         [Display(Name = "任务总数")]
         public int TaskNum { set; get; }
+        [Display(Name = "任务类型")]
+        public EnumTaskType TaskType { set; get; }
         [Display(Name = "创建时间")]
         public DateTime CreateTime { set; get; }
         [Display(Name = "完成时间")]

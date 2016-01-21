@@ -4,12 +4,12 @@
 @model List<TaskEntity>
 
 @{
-    ViewBag.Title = "任务列表（北京企业信用信息网）";
+    ViewBag.Title = "任务列表(全国组织机构代码网)";
     Layout = "../_LayoutPage.cshtml";
 }
 
 <div class="container">
-    <br />
+    <br/>
     <div class="row">
         <div class="col-lg-12">
             <form class="bs-example bs-example-form" role="form">
@@ -26,7 +26,7 @@
     </div>
     <div class="row">
         <div class="col-lg-12">
-            <hr />
+            <hr/>
             <div class="alert alert-warning fade in">
                 <a href="#" class="close" data-dismiss="alert">
                     &times;
@@ -51,9 +51,6 @@
                         <td class="text-center" style="width: 400px;">
                             任务进度
                         </td>
-                        @*<td class="text-center">
-                                    已运行
-                                </td>*@
                         <td class="text-center">
                             任务创建人
                         </td>
@@ -84,16 +81,6 @@
                                     </div>
                                 </div>
                             </td>
-                            @*<td class="text-right">
-                                        @if (taskEntity.EndTime == null)
-                                        {
-                                            @Timer.DateDiff(DateTime.Now, taskEntity.CreateTime);
-                                        }
-                                        else
-                                        {
-                                            @Timer.DateDiff((DateTime)taskEntity.EndTime, taskEntity.CreateTime)
-                                        }
-                                    </td>*@
                             <td class="text-center">
                                 @taskEntity.OperatorName
                             </td>
@@ -107,32 +94,7 @@
                                 <script type="text/javascript">
                                     (function($) {
                                         var $task = $('div.@taskEntity.Unique');
-
-                                        function checkInsert() {
-                                            var i = 0;
-                                            var insertInterval = setInterval(function() {
-                                                if (i == parseInt('@taskEntity.TaskNum')) {
-                                                    goGather();
-                                                    window.clearInterval(insertInterval);
-                                                }
-                                                $.post('@Url.Action("CheckInsertMetadata")', @Html.Raw(@JsonConvert.SerializeObject(taskEntity)), function(data) {
-                                                    i = data.num;
-                                                    var percentage = Percentage(data.num, parseInt('@taskEntity.TaskNum'));
-                                                    $task.css('width', percentage + "%");
-                                                    $task.find("strong").text(percentage + "%");
-                                                });
-                                            }, 1000);
-                                        };
-
                                         var $labelSpan = $('td#@taskEntity.Unique span');
-
-                                        function goGather() {
-                                            $.post('@Url.Action("GoGather")', @Html.Raw(@JsonConvert.SerializeObject(taskEntity)), function(data) {
-                                                $labelSpan.attr('class', 'label label-warning').text('数据抓取中');
-                                                //启动监听
-                                                checkGather();
-                                            });
-                                        };
 
                                         function checkGather() {
                                             var n;
@@ -164,10 +126,6 @@
                                             $task.find("strong").text("100%");
                                         };
 
-                                        @if (taskEntity.TaskStateDicId == 1)
-                                        {
-                                            @:checkInsert();
-                                        }
                                         @if (taskEntity.TaskStateDicId == 2)
                                         {
                                             @:checkGather();
@@ -254,5 +212,5 @@
             }
         });
     };
-</script>
+    </script>
 }

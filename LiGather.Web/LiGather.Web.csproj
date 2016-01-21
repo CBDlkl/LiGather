@@ -106,6 +106,7 @@
     <Content Include="Content\bootstrap\js\bootstrap.min.js" />
     <Content Include="Content\bootstrap\js\jquery-1.11.3.js" />
     <Content Include="Content\bootstrap\js\npm.js" />
+    <Content Include="Content\browser.png" />
     <Content Include="Content\layer\extend\layer.ext.js" />
     <Content Include="Content\layer\layer.js" />
     <Content Include="Content\layer\skin\default\icon-ext.png" />
@@ -125,9 +126,11 @@
     <Content Include="App_Code\LaberHtmlHelper.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\CrawlerController.cs" />
+    <Compile Include="Controllers\QgCrawlerController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\BrowserVersionAttribute.cs" />
     <Compile Include="Models\SingelSearchModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -142,10 +145,17 @@
     <Content Include="Content\bootstrap\fonts\glyphicons-halflings-regular.woff" />
     <Content Include="Content\bootstrap\fonts\glyphicons-halflings-regular.woff2" />
     <Content Include="Views\Crawler\CreateTask.cshtml" />
+    <Content Include="OtherPages\CrawlerKey">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Properties\PublishProfiles\发布到web.pubxml" />
     <None Include="Properties\PublishProfiles\文件系统.pubxml" />
     <Content Include="Views\Crawler\SingelSearch.cshtml" />
     <Content Include="Views\_LayoutPage.cshtml" />
+    <Content Include="OtherPages\OldBrowser.html" />
+    <Content Include="Views\QgCrawler\TaskList.cshtml" />
+    <Content Include="Views\QgCrawler\CreateTask.cshtml" />
+    <Content Include="Views\QgCrawler\SingelSearch.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

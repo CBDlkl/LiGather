@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -11,17 +10,17 @@ using LiGather.Model.WebDomain;
 using LiGather.Crawler;
 using LiGather.DataPersistence.Domain;
 using LiGather.Model.Domain;
-using LiGather.Model.Log;
 using LiGather.Util;
+using LiGather.Web.Models;
 
 namespace LiGather.Web.Controllers
 {
+    [BrowserVersion]
     public class CrawlerController : Controller
     {
-
         public ActionResult TaskList()
         {
-            return View(new TaskDomain().Get(t => t.IsSingelSearch == false).ToList());
+            return View(new TaskDomain().Get(t => t.IsSingelSearch == false && t.TaskType == EnumTaskType.BjCrawler).ToList());
         }
 
         public ActionResult SingelSearch(string guid = null, string companyName = null)
@@ -44,6 +43,7 @@ namespace LiGather.Web.Controllers
                     //上网检索
                     List<string> companyList = new List<string> { companyName };
                     TaskEntity model = new TaskEntity();
+                    model.TaskType = EnumTaskType.BjCrawler;
                     model.TaskName = $"单个任务[{DateTime.Now.ToString("G")}]";
                     model.Unique = Conv.ToGuid(guid);
                     model.TaskStateDicId = 1;
@@ -72,11 +72,6 @@ namespace LiGather.Web.Controllers
             return View(crawlerEntity);
         }
 
-        public ActionResult Detail()
-        {
-            return View();
-        }
-
         public ActionResult CreateTask()
         {
             ViewBag.Unique = Guid.NewGuid();
@@ -92,6 +87,7 @@ namespace LiGather.Web.Controllers
             var companyList = new List<string>();
             while (!streamread.EndOfStream)
                 companyList.Add(streamread.ReadLine());
+            model.TaskType = EnumTaskType.BjCrawler;
             model.TaskStateDicId = 1;
             model.TaskNum = companyList.Count;
             model.CreateTime = DateTime.Now;

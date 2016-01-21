@@ -5,12 +5,16 @@ namespace LiGather.DataPersistence.Domain
 {
     public class LogDomain
     {
+        private readonly object _obj = new object();
         public void Add(LogEntity model)
         {
-            using (LiGatherContext db = new LiGatherContext())
+            lock (_obj)
             {
-                db.LogEntities.AddOrUpdate(model);
-                db.SaveChanges();
+                using (LiGatherContext db = new LiGatherContext())
+                {
+                    db.LogEntities.AddOrUpdate(model);
+                    db.SaveChanges();
+                }
             }
         }
     }

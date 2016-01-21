@@ -116,7 +116,6 @@ namespace LiGather.Crawler.Bjqyxy
         {
             bool isReloadCompany = true; //是否重新获取新的企业名称
             string companyOld = ""; //记忆企业名称
-            var companyEntity = new TargeCompanyEntity();
             var httpClient = new HttpClient();
             httpClient.Setting.Timeout = 1000 * 5;
             httpClient.Create<string>(HttpMethod.Post, firsturl).Send();
@@ -128,7 +127,7 @@ namespace LiGather.Crawler.Bjqyxy
                     //查询资源预处理
                     if (isReloadCompany)
                     {
-                        companyEntity = new TargeCompanyDomain().GetSingel(QueryCondition);
+                        var companyEntity = new TargeCompanyDomain().GetSingel(QueryCondition);
                         if (companyEntity == null)
                             break;
                         targetModel.搜索名称 = companyEntity.CompanyName; //搜索名称，直接持久化
@@ -228,7 +227,6 @@ namespace LiGather.Crawler.Bjqyxy
         /// <param name="companyName"></param>
         public void SingelSearch(string companyName)
         {
-            var companyEntity = new TargeCompanyEntity();
             var httpClient = new HttpClient();
             httpClient.Setting.Timeout = 1000 * 5;
             httpClient.Create<string>(HttpMethod.Post, firsturl).Send();

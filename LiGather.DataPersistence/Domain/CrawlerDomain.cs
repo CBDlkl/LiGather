@@ -16,7 +16,6 @@ namespace LiGather.DataPersistence.Domain
         {
             using (LiGatherContext db = new LiGatherContext())
             {
-                var a = db.CrawlerEntities.Any(t => t.搜索名称.Equals(model.搜索名称));
                 if (!db.CrawlerEntities.Any(t => t.搜索名称.Equals(model.搜索名称)))
                 {
                     db.CrawlerEntities.Add(model);

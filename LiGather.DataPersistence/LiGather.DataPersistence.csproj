@@ -51,6 +51,7 @@
     <Compile Include="DbContextInitializer.cs" />
     <Compile Include="Domain\CrawlerDomain.cs" />
     <Compile Include="Domain\LogDomain.cs" />
+    <Compile Include="Domain\QgOrgCodeDomain.cs" />
     <Compile Include="Domain\TargeCompanyDomain.cs" />
     <Compile Include="Domain\TaskDomain.cs" />
     <Compile Include="Domain\TaskStateDicDomain.cs" />

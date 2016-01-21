@@ -70,6 +70,8 @@
     <Compile Include="BaseData.cs" />
     <Compile Include="Bjqyxy\BjCrawler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QgOrgCode\QgCrawler.cs" />
+    <Compile Include="QgOrgCode\TaskList.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

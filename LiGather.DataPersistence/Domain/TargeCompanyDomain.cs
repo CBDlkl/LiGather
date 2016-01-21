@@ -51,7 +51,7 @@ namespace LiGather.DataPersistence.Domain
         {
             using (LiGatherContext _db = new LiGatherContext())
             {
-                var model = _db.TrCompanyEntities.Where(where).FirstOrDefault(t => t.IsAbnormal == false && t.IsSearched == false);
+                var model = _db.TrCompanyEntities.Where(where).FirstOrDefault(t => t.IsSearched == false);
                 if (model != null)
                 {
                     model.IsSearched = true;

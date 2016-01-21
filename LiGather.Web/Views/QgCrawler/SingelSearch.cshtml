@@ -1,0 +1,82 @@
+﻿@model LiGather.Model.Domain.QgOrgCodeEntity
+
+@{
+    ViewBag.Title = "企业数据查询中心 - 独立查询";
+    Layout = "../_LayoutPage.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12">
+            <br />
+            @using (Html.BeginForm("SingelSearch", "QgCrawler", FormMethod.Post, new { @id = "searchForm", @class = "bs-example bs-example-form" }))
+            {
+                <div class="input-group">
+                    @Html.TextBox("companyName", "", new { @class = "form-control", @placeholder = "搜索企业名称（精确匹配）" })
+                    @Html.Hidden("Guid", (object)ViewBag.Guid)
+                    <span class="input-group-btn">
+                        <button class="btn btn-primary" type="button" onclick="formSubmit()">
+                            <span class="glyphicon glyphicon-search"></span>  查  询
+                        </button>
+                    </span>
+                </div>
+            }
+        </div>
+        <div class="col-lg-12">
+            <hr>
+            <div>
+                @if (Model == null)
+                {
+                    <h2 class="text-center">未查询到内容！</h2>
+                }
+                else
+                {
+                    <div class="col-lg-6">
+                        <h4>全国组织机构代码管理中心</h4>
+                        <dl class="dl-horizontal">
+                            <dt>@Html.LabelFor(t => t.companyName)</dt>
+                            <dd>@Model.companyName</dd>
+
+                            <dt>@Html.LabelFor(t => t.jgmc)</dt>
+                            <dd>@Model.jgmc</dd>
+
+                            <dt>@Html.LabelFor(t => t.jgdm)</dt>
+                            <dd>@Model.jgdm</dd>
+
+                            <dt>@Html.LabelFor(t => t.jgdz)</dt>
+                            <dd>@Model.jgdz</dd>
+
+                            <dt>@Html.LabelFor(t => t.jglx)</dt>
+                            <dd>@Model.jglx</dd>
+
+                            <dt>@Html.LabelFor(t => t.zch)</dt>
+                            <dd>@Model.zch</dd>
+
+                            <dt>@Html.LabelFor(t => t.bzjgmcs)</dt>
+                            <dd>@Model.bzjgmcs</dd>
+
+                            <dt>@Html.LabelFor(t => t.zcrq)</dt>
+                            <dd>@Model.zcrq</dd>
+
+                            <dt>@Html.LabelFor(t => t.zfrq)</dt>
+                            <dd>@Model.zfrq</dd>
+
+                        </dl>
+                    </div>
+                    <div class="col-lg-6">
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script{
+    <script type="text/javascript">
+    var formSubmit = function() {
+        layer.msg('搜索中...', { icon: 16, time: 1000 * 1000, shade: 0.5 });
+        $("form#searchForm").submit();
+    };
+    </script>
+}
