@@ -23,17 +23,17 @@ namespace LiGather.Web.Controllers
             return View(new TaskDomain().Get(t => t.IsSingelSearch == false && t.TaskType == EnumTaskType.BjCrawler).ToList());
         }
 
-        public ActionResult SingelSearch(string guid = null, string companyName = null)
+        public ActionResult SingelSearch(string guid = null, string searchInfo = null)
         {
             CrawlerEntity crawlerEntity = null;
-            if (string.IsNullOrWhiteSpace(guid) && string.IsNullOrWhiteSpace(companyName))
+            if (string.IsNullOrWhiteSpace(guid) && string.IsNullOrWhiteSpace(searchInfo))
             {
                 ViewBag.Guid = Guid.NewGuid();
             }
             else
             {
                 ViewBag.Guid = guid;
-                var count = new TargeCompanyDomain().Get(t => t.CompanyName.Equals(companyName))?.Count;
+                var count = new TargeCompanyDomain().Get(t => t.CompanyName.Equals(searchInfo))?.Count;
                 if (count > 0)
                 {
                     //历史记录中已存在
@@ -41,7 +41,7 @@ namespace LiGather.Web.Controllers
                 else
                 {
                     //上网检索
-                    List<string> companyList = new List<string> { companyName };
+                    List<string> companyList = new List<string> { searchInfo };
                     TaskEntity model = new TaskEntity();
                     model.TaskType = EnumTaskType.BjCrawler;
                     model.TaskName = $"单个任务[{DateTime.Now.ToString("G")}]";
@@ -59,7 +59,7 @@ namespace LiGather.Web.Controllers
                             tasks[i] = new Task(() =>
                             {
                                 var bjqyxy = new Crawler.Bjqyxy.BjCrawler(taskEntity, t => t.TaskGuid.Equals(taskEntity.Unique));
-                                bjqyxy.SingelSearch(companyName);
+                                bjqyxy.SingelSearch(searchInfo);
                             });
                             tasks[i].Start();
                         }
@@ -67,7 +67,7 @@ namespace LiGather.Web.Controllers
                     });
 
                 }
-                crawlerEntity = new CrawlerDomain().Get(t => t.搜索名称 == companyName && t.名称 != null).FirstOrDefault();
+                crawlerEntity = new CrawlerDomain().Get(t => t.搜索名称 == searchInfo && t.名称 != null).FirstOrDefault();
             }
             return View(crawlerEntity);
         }

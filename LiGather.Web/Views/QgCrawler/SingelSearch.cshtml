@@ -5,23 +5,41 @@
     Layout = "../_LayoutPage.cshtml";
 }
 
+@Html.Raw(ViewBag.TimeOut)
+
+<div class="container-fluid banner">
+    <div class="banseo">
+        <div class="bannertitle"><a href="#">全国组织机构代码查询</a></div>
+        @using (Html.BeginForm("SingelSearch", "QgCrawler", FormMethod.Post, new { @id = "searchForm", @onsubmit = "return formSubmit()" }))
+        {
+            @Html.TextBox("searchInfo", "", new { @class = "bantxt", @placeholder = "搜索企业名称（精确匹配）" })
+            @Html.Hidden("Guid", (object)ViewBag.Guid)
+            <button class="btn banbutt" id="seobut" type="button" onclick="formSubmit()">
+                <span class="glyphicon glyphicon-search"></span>
+            </button>
+        }
+    </div>
+    <div style="clear: both;"></div>
+    <canvas></canvas>
+</div>
+
 <div class="container">
     <div class="row">
-        <div class="col-lg-12">
-            <br />
-            @using (Html.BeginForm("SingelSearch", "QgCrawler", FormMethod.Post, new { @id = "searchForm", @class = "bs-example bs-example-form" }))
-            {
-                <div class="input-group">
-                    @Html.TextBox("companyName", "", new { @class = "form-control", @placeholder = "搜索企业名称（精确匹配）" })
-                    @Html.Hidden("Guid", (object)ViewBag.Guid)
-                    <span class="input-group-btn">
-                        <button class="btn btn-primary" type="button" onclick="formSubmit()">
-                            <span class="glyphicon glyphicon-search"></span>  查  询
-                        </button>
-                    </span>
-                </div>
-            }
-        </div>
+        @*<div class="col-lg-12">
+                <br />
+                @using (Html.BeginForm("SingelSearch", "QgCrawler", FormMethod.Post, new { @id = "searchForm", @class = "bs-example bs-example-form" }))
+                {
+                    <div class="input-group">
+                        @Html.TextBox("companyName", "", new { @class = "form-control", @placeholder = "搜索企业名称（精确匹配）" })
+                        @Html.Hidden("Guid", (object)ViewBag.Guid)
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button" onclick="formSubmit()">
+                                <span class="glyphicon glyphicon-search"></span>  查  询
+                            </button>
+                        </span>
+                    </div>
+                }
+            </div>*@
         <div class="col-lg-12">
             <hr>
             <div>
@@ -74,9 +92,16 @@
 
 @section Script{
     <script type="text/javascript">
-    var formSubmit = function() {
-        layer.msg('搜索中...', { icon: 16, time: 1000 * 1000, shade: 0.5 });
-        $("form#searchForm").submit();
-    };
+        var formSubmit = function () {
+            $input = $("input#searchtxt").val();
+            if ($input === '') {
+                layer.alert('请输入搜索企业名', { icon: 0 });
+                return false;
+            }
+            layer.msg('搜索中...', { icon: 16, time: 1000 * 1000, shade: 0.5 });
+            $('form#searchForm').ajaxForm(function () {
+                
+            });
+        };
     </script>
 }

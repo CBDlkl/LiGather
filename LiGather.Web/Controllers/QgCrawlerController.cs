@@ -11,25 +11,24 @@ using LiGather.DataPersistence.Domain;
 using LiGather.Model.Domain;
 using LiGather.Model.WebDomain;
 using LiGather.Util;
+using LiGather.Web.Models;
 
 namespace LiGather.Web.Controllers
 {
+    [BrowserVersion]
     public class QgCrawlerController : Controller
     {
         public ActionResult TaskList()
         {
-            var nowHour = DateTime.Now.Hour;
-            if (nowHour >= 17 || nowHour <= 9)
-            {
-
-            }
+            CheckTime();
             return View(new TaskDomain().Get(t => t.IsSingelSearch == false && t.TaskType == EnumTaskType.QgCrawler).ToList());
         }
 
-        public ActionResult SingelSearch(string guid = null, string companyName = null)
+        public ActionResult SingelSearch(string guid = null, string searchInfo = null)
         {
+            CheckTime();
             QgOrgCodeEntity qgCrawlerEntity = null;
-            if (string.IsNullOrWhiteSpace(guid) && string.IsNullOrWhiteSpace(companyName))
+            if (string.IsNullOrWhiteSpace(guid) && string.IsNullOrWhiteSpace(searchInfo))
             {
                 ViewBag.Guid = Guid.NewGuid();
             }
@@ -37,7 +36,7 @@ namespace LiGather.Web.Controllers
             {
                 ViewBag.Guid = guid;
 
-                List<string> companyList = new List<string> { companyName };
+                List<string> companyList = new List<string> { searchInfo };
                 TaskEntity taskEntity = new TaskEntity();
                 taskEntity.TaskType = EnumTaskType.QgCrawler;
                 taskEntity.TaskName = $"单个任务[{DateTime.Now.ToString("G")}]";
@@ -52,7 +51,7 @@ namespace LiGather.Web.Controllers
                 tasklist.AddTask(companyList);
                 new QgCrawler(taskEntity).RunCrawler(tasklist, 1);
 
-                qgCrawlerEntity = new QgOrgCodeDomain().Get(t => t.companyName == companyName).FirstOrDefault();
+                qgCrawlerEntity = new QgOrgCodeDomain().Get(t => t.companyName == searchInfo).FirstOrDefault();
             }
             return View(qgCrawlerEntity);
         }
@@ -101,6 +100,15 @@ namespace LiGather.Web.Controllers
             var bytes = crawlerlists.ListToExcel(isOptimize);
             return File(bytes, "application/vnd.ms-excel",
                 "导出全国组织机构采集信息[" + DateTime.Now.ToString("yyyy-M-d dddd") + "].xls");
+        }
+
+        private void CheckTime()
+        {
+            var nowHour = DateTime.Now.Hour;
+            if (nowHour > 17 || nowHour < 9)
+            {
+                ViewBag.TimeOut = "<script>var index=layer.open({title:'系统消息',icon:4,shadeClose:true,content:'全国组织机构代码网开放时间是9:00AM只5:00PM，请在指定时间内使用本功能。',btn:['老朽懂了']});</script>";
+            }
         }
     }
 }

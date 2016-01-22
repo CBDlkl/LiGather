@@ -116,7 +116,10 @@
     <Content Include="Content\layer\skin\default\loading-2.gif" />
     <Content Include="Content\layer\skin\layer.css" />
     <Content Include="Content\layer\skin\layer.ext.css" />
+    <Content Include="Content\my.css" />
     <Content Include="Global.asax" />
+    <Content Include="Scripts\ban.js" />
+    <Content Include="Scripts\jquery.cookie.min.js" />
     <Content Include="Scripts\jquery.form.js" />
     <Content Include="Web.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -125,6 +128,7 @@
   <ItemGroup>
     <Content Include="App_Code\LaberHtmlHelper.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\CheckBrowserController.cs" />
     <Compile Include="Controllers\CrawlerController.cs" />
     <Compile Include="Controllers\QgCrawlerController.cs" />
     <Compile Include="Global.asax.cs">
@@ -156,6 +160,7 @@
     <Content Include="Views\QgCrawler\TaskList.cshtml" />
     <Content Include="Views\QgCrawler\CreateTask.cshtml" />
     <Content Include="Views\QgCrawler\SingelSearch.cshtml" />
+    <Content Include="Views\CheckBrowser\OldBrowser.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
