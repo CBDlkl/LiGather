@@ -90,18 +90,3 @@
     </div>
 </div>
 
-@section Script{
-    <script type="text/javascript">
-        var formSubmit = function () {
-            $input = $("input#searchtxt").val();
-            if ($input === '') {
-                layer.alert('请输入搜索企业名', { icon: 0 });
-                return false;
-            }
-            layer.msg('搜索中...', { icon: 16, time: 1000 * 1000, shade: 0.5 });
-            $('form#searchForm').ajaxForm(function () {
-                
-            });
-        };
-    </script>
-}

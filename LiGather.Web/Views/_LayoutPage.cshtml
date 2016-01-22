@@ -7,6 +7,7 @@
     <link href="~/Content/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css" />
     <link href="~/Content/my.css" rel="stylesheet" />
     <script src="~/Content/bootstrap/js/jquery-1.11.3.js"></script>
+    <script src="~/Scripts/jquery.form.js"></script>
     <script src="~/Content/layer/layer.js"></script>
     <script src="~/Content/bootstrap/js/bootstrap.js" type="text/javascript"></script>
     <script src="~/Scripts/jquery.cookie.min.js"></script>
@@ -53,9 +54,7 @@
 
     @RenderBody()
 
-    @RenderSection("Script")
-    <script src="~/Scripts/core_plugin.js"></script>
-    <script src="~/Scripts/custom_effect.js"></script>
+    @RenderSection("Script", false)
     <script type="text/javascript">
         $(function () {
             $('#searchInfo').bind({
@@ -75,35 +74,16 @@
             }
             );
         });
-        (function($) {
-            "use strict";
-            var isOn = 0,
-                sets,
-                fx,
-                toAnimate = "div.bannertitle a",
-                settings = {
-                    animation: 8,
-                    //动画方式 从1-15 每个数字代表一个动画 请自测效果
-                    animationType: "in",
-                    //显示方式 in 和out 参数，in代表入场,out代表出场
-                    backwards: false,
-                    //改变动画显示方向，默认false 设为true 动画将从后往前倒序播放
-                    easing: "easeOutQuint",
-                    speed: 1000,
-                    //动画帧速 即在指定时间内完成动画
-                    sequenceDelay: 100,
-                    //场景延迟  即执行完上一个动画后，等待指定时间继续执行下一动画
-                    startDelay: 0,
-                    //开始延迟，即执行当前动画时，等待指定时间后再开始
-                    offsetX: 100,
-                    //动画元素 x坐标偏移量
-                    offsetY: 50,
-                    //动画元素 Y坐标偏移量
-                    onComplete: function() {},
-                    //回调函数 即 执行完动画后，需要执行的回调方法
-                    restoreHTML: true //重置元素 即重复播放两次该动画 类似于此效果 默认true
-                };
-        })(jQuery);
+
+        var formSubmit = function () {
+            $input = $("input#searchInfo").val();
+            if ($input === '') {
+                layer.alert('请输入搜索内容', { icon: 0 });
+                return false;
+            }
+            layer.msg('搜索中...', { icon: 16, time: 1000 * 3, shade: 0.5 });
+            $('form#searchForm').ajaxForm(function () { });
+        };
     </script>
 </body>
 </html>

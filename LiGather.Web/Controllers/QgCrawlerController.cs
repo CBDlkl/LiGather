@@ -18,10 +18,12 @@ namespace LiGather.Web.Controllers
     [BrowserVersion]
     public class QgCrawlerController : Controller
     {
-        public ActionResult TaskList()
+        public ActionResult TaskList(string searchInfo = null)
         {
             CheckTime();
-            return View(new TaskDomain().Get(t => t.IsSingelSearch == false && t.TaskType == EnumTaskType.QgCrawler).ToList());
+            return View(string.IsNullOrWhiteSpace(searchInfo) 
+                ? new TaskDomain().Get(t => t.IsSingelSearch == false && t.TaskType == EnumTaskType.QgCrawler).ToList() 
+                : new TaskDomain().Get(t => t.IsSingelSearch == false && t.TaskType == EnumTaskType.QgCrawler).Where(t => t.TaskName.Contains(searchInfo)).ToList());
         }
 
         public ActionResult SingelSearch(string guid = null, string searchInfo = null)
@@ -51,7 +53,7 @@ namespace LiGather.Web.Controllers
                 tasklist.AddTask(companyList);
                 new QgCrawler(taskEntity).RunCrawler(tasklist, 1);
 
-                qgCrawlerEntity = new QgOrgCodeDomain().Get(t => t.companyName == searchInfo).FirstOrDefault();
+                qgCrawlerEntity = new QgOrgCodeDomain().Get(t => t.companyName == searchInfo && t.jgmc != null).FirstOrDefault();
             }
             return View(qgCrawlerEntity);
         }
@@ -83,7 +85,7 @@ namespace LiGather.Web.Controllers
                 tasklist.AddTask(companyList);
                 new QgCrawler(taskEntity).RunCrawler(tasklist);
             }).Start();
-            return Json(new { msg = $"成功上传了任务文件，系统接受到{companyList.Count}条记录，即将执行查询..." });
+            return Json(new { msg = $"成功上传了任务文件，系统接受到{companyList.Count}条记录，即将执行查询." });
         }
 
         public ActionResult CheckGoGather(TaskEntity model)
@@ -94,7 +96,7 @@ namespace LiGather.Web.Controllers
 
         public ActionResult Export(TaskEntity model, bool isOptimize)
         {
-            var crawlerlists = new CrawlerDomain().Get(t => t.TaskGuid == model.Unique).OrderByDescending(t => t.爬行更新时间).ToList();
+            var crawlerlists = new QgOrgCodeDomain().Get(t => t.TaskGuid == model.Unique).ToList();
             if (crawlerlists.Count < 1)
                 return Content("<script>alert('未找到内容');</script>");
             var bytes = crawlerlists.ListToExcel(isOptimize);

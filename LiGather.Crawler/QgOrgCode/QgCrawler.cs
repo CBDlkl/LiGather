@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FSLib.Network.Http;
 using LiGather.DataPersistence.Domain;
@@ -52,14 +53,16 @@ namespace LiGather.Crawler.QgOrgCode
             while (TaskList.SurplusNum() > 0)
             {
                 var company = TaskList.GetNextTask();
-                QgOrgCodeEntity target = new QgOrgCodeEntity { companyName = company, TaskGuid = TaskEntity.Unique };
+                QgOrgCodeEntity target = new QgOrgCodeEntity { companyName = company, TaskGuid = TaskEntity.Unique, InsertTime = DateTime.Now };
                 //正文
                 string data = "callCount=1\r\nc0-scriptName=ServiceForNum\r\nc0-methodName=getData\r\nc0-id=2025_1440664403388\r\nc0-e1=string:jgmc%20%3D" + company + "%20%20not%20ZYBZ%3D('2')%20\r\nc0-e2=string:jgmc%20%3D" + company + "%20%20not%20ZYBZ%3D('2')%20\r\nc0-e3=string:" + company + "\r\nc0-e4=string:2\r\nc0-e5=string:" + company + "\r\nc0-e6=string:%E5%85%A8%E5%9B%BD\r\nc0-e7=string:alll\r\nc0-e8=string:\r\nc0-e9=boolean:false\r\nc0-e10=boolean:true\r\nc0-e11=boolean:false\r\nc0-e12=boolean:false\r\nc0-e13=string:\r\nc0-e14=string:\r\nc0-e15=string:\r\nc0-param0=Object:{firststrfind:reference:c0-e1, strfind:reference:c0-e2, key:reference:c0-e3, kind:reference:c0-e4, tit1:reference:c0-e5, selecttags:reference:c0-e6, xzqhName:reference:c0-e7, button:reference:c0-e8, jgdm:reference:c0-e9, jgmc:reference:c0-e10, jgdz:reference:c0-e11, zch:reference:c0-e12, strJgmc:reference:c0-e13, :reference:c0-e14, secondSelectFlag:reference:c0-e15}\r\nxml=true";
                 var context = httpclient.Create<string>(HttpMethod.Post, TargetUrl, data: data).Send();
                 if (context.IsValid())
                 {
-                    target = GetEntityList(context.Result, company, TaskEntity.Unique).FirstOrDefault();
-                    new QgOrgCodeDomain().Add(target);
+                    GetEntityList(context.Result, company, TaskEntity.Unique).ForEach(t =>
+                    {
+                        new QgOrgCodeDomain().Add(t);
+                    });
                 }
                 else
                 {
@@ -102,10 +105,10 @@ namespace LiGather.Crawler.QgOrgCode
                 cusList = cusList.Where(m => m.jgmc.Equals(company)).ToList();
             }
 
-            cusList.ForEach(m => { m.companyName = company; m.TaskGuid = taskGuid; });
-            if (cusList == null)
+            cusList.ForEach(m => { m.companyName = company; m.TaskGuid = taskGuid; m.InsertTime = DateTime.Now; });
+            if (cusList.Count < 1)
             {
-
+                cusList = new List<QgOrgCodeEntity> { new QgOrgCodeEntity { companyName = company, TaskGuid = taskGuid, InsertTime = DateTime.Now } };
             }
             return cusList;
         }

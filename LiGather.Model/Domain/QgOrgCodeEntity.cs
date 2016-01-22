@@ -9,6 +9,8 @@ namespace LiGather.Model.Domain
         public int Id { set; get; }
         [Display(Name = "查询名称")]
         public string companyName { set; get; }
+        [Display(Name = "机构名称")]
+        public string jgmc { set; get; }
         [Display(Name = "颁发单位")]
         public string bzjgmcs { set; get; }
         [Display(Name = "备注日期")]
@@ -19,8 +21,6 @@ namespace LiGather.Model.Domain
         public string jgdz { set; get; }
         [Display(Name = "机构类型")]
         public string jglx { set; get; }
-        [Display(Name = "机构名称")]
-        public string jgmc { set; get; }
         [Display(Name = "机构登记证号")]
         public string zch { set; get; }
         [Display(Name = "有效期（起）")]
@@ -29,6 +29,8 @@ namespace LiGather.Model.Domain
         public string zfrq { set; get; }
         [Display(Name = "任务编号")]
         public Guid TaskGuid { set; get; }
+        [Display(Name = "抓取入库时间")]
+        public DateTime InsertTime { set; get; }
         //public string entryJgdm { set; get; }
         //public string ly { set; get; }
         //public string reservea { set; get; }

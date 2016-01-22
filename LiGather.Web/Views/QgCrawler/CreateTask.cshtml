@@ -34,7 +34,7 @@
                         <div class="form-group">
                             @Html.LabelFor(model => model.OperatorName, htmlAttributes: new { @class = "control-label col-md-2" })
                             <div class="col-md-10">
-                                @Html.EditorFor(model => model.OperatorName, new { htmlAttributes = new { @class = "form-control", @placeholder = "请输入您的姓名", @required = "required" } })
+                                @Html.EditorFor(model => model.OperatorName, new { htmlAttributes = new { @class = "form-control", @placeholder = "请输入您的姓名（请输入真名，方便统计）", @required = "required" } })
                                 @Html.ValidationMessageFor(model => model.OperatorName, "", new { @class = "text-danger" })
                             </div>
                         </div>

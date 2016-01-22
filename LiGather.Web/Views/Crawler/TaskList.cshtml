@@ -10,7 +10,7 @@
 <div class="container-fluid banner">
     <div class="banseo">
         <div class="bannertitle"><a href="#">北京企业工商信息采集</a></div>
-        @using (Html.BeginForm("SingelSearch", "Crawler", FormMethod.Post, new { @id = "searchForm", @onsubmit = "return false;" }))
+        @using (Html.BeginForm("TaskList", "Crawler", FormMethod.Post, new { @id = "searchForm", @onsubmit = "return formSubmit()" }))
         {
             @Html.TextBox("searchInfo", "", new { @class = "bantxt", @placeholder = "搜索任务名称" })
             @Html.Hidden("guid", (object)ViewBag.Guid)

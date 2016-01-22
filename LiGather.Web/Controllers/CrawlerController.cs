@@ -18,9 +18,11 @@ namespace LiGather.Web.Controllers
     [BrowserVersion]
     public class CrawlerController : Controller
     {
-        public ActionResult TaskList()
+        public ActionResult TaskList(string searchInfo = null)
         {
-            return View(new TaskDomain().Get(t => t.IsSingelSearch == false && t.TaskType == EnumTaskType.BjCrawler).ToList());
+            return View(string.IsNullOrWhiteSpace(searchInfo)
+                ? new TaskDomain().Get(t => t.IsSingelSearch == false && t.TaskType == EnumTaskType.BjCrawler).ToList()
+                : new TaskDomain().Get(t => t.IsSingelSearch == false && t.TaskType == EnumTaskType.BjCrawler).Where(t => t.TaskName.Contains(searchInfo)).ToList());
         }
 
         public ActionResult SingelSearch(string guid = null, string searchInfo = null)

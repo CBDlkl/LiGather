@@ -12,7 +12,7 @@
 <div class="container-fluid banner">
     <div class="banseo">
         <div class="bannertitle"><a href="#">全国组织机构代码采集</a></div>
-        @using (Html.BeginForm("SingelSearch", "Crawler", FormMethod.Post, new {@id = "searchForm", @onsubmit = "return false;"}))
+        @using (Html.BeginForm("TaskList", "QgCrawler", FormMethod.Post, new {@id = "searchForm", @onsubmit = "return formSubmit()" }))
         {
             @Html.TextBox("searchInfo", "", new {@class = "bantxt", @placeholder = "搜索任务名称"})
             @Html.Hidden("guid", (object) ViewBag.Guid)
@@ -33,7 +33,12 @@
                 <a href="#" class="close" data-dismiss="alert">
                     &times;
                 </a>
-                <strong>说明:</strong> 此处显示所有已完成或正在进行的<strong>全国组织机构代码</strong>爬取任务。<label onclick="stateMessage()">[状态说明]</label>
+                <p>
+                    <strong>说明:</strong> 此处显示所有已完成或正在进行的<strong>全国组织机构代码</strong>爬取任务。<label onclick="stateMessage()">[状态说明]</label>
+                </p>
+                <p>
+                    <strong>注意:</strong> 全国的抓取任务中，全为精确查找，未找到的名单，不会显示。
+                </p>
             </div>
             <p>
                 <button type="button" class="btn btn-primary" onclick="openNew()">
