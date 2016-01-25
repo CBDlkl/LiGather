@@ -192,6 +192,7 @@
             layer.msg('搜索中...', { icon: 16, time: 1000 * 3, shade: 0.5 }, function () {
                 layer.msg('缓存库中没有查找到记录，正在启用代理去公网搜索，这需要一段时间，请稍等...', { icon: 16, time: 1000 * 1000, shade: 0.5 });
             });
+            console.debug('aaa');
             $('form#searchForm').ajaxForm(function () { });
         };
     </script>

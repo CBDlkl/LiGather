@@ -54,7 +54,6 @@
 
     @RenderBody()
 
-    @RenderSection("Script", false)
     <script type="text/javascript">
         $(function () {
             $('#searchInfo').bind({
@@ -85,5 +84,8 @@
             $('form#searchForm').ajaxForm(function () { });
         };
     </script>
+
+    @RenderSection("Script", false)
+
 </body>
 </html>
